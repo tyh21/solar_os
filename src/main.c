@@ -1710,6 +1710,14 @@ void app_main(void)
     if (terminal != NULL) {
         const bool shell_started = solar_os_sessions_switch_to_app(solar_os_shell_app());
         ESP_LOGI(TAG, "boot milestone: shell switch=%s", shell_started ? "ok" : "failed");
+        /* Also start a shell on USB CDC so a serial terminal can be used without a BLE keyboard. */
+        if (board_has(SOLAR_OS_BOARD_CAP_CDC)) {
+            uint8_t cdc_session = 0;
+            const esp_err_t cdc_err =
+                solar_os_port_shell_start(&os_ctx, SOLAR_OS_CDC_PORT_NAME, true, &cdc_session);
+            ESP_LOGI(TAG, "boot milestone: cdc shell=%s session=%u",
+                     cdc_err == ESP_OK ? "ok" : esp_err_to_name(cdc_err), cdc_session);
+        }
     } else {
         start_headless_shell_if_needed();
     }
