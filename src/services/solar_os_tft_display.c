@@ -5,11 +5,20 @@
 #include "esp_check.h"
 #include "esp_heap_caps.h"
 #include "solar_os_board_display.h"
+#include "solar_os_buses.h"
 #include "solar_os_display.h"
 #include "tft_ili9341.h"
 
 #ifndef SOLAR_OS_BOARD_DISPLAY_SPI_CLOCK_HZ
 #define SOLAR_OS_BOARD_DISPLAY_SPI_CLOCK_HZ 40000000U
+#endif
+
+#ifndef SOLAR_OS_BOARD_DISPLAY_SPI_MODE
+#define SOLAR_OS_BOARD_DISPLAY_SPI_MODE 0
+#endif
+
+#ifndef SOLAR_OS_BOARD_DISPLAY_INVERT_COLORS
+#define SOLAR_OS_BOARD_DISPLAY_INVERT_COLORS 0
 #endif
 
 /* Per-controller defaults preserve exact current behavior for boards that
@@ -100,7 +109,7 @@ static esp_err_t parse_bindings(const solar_os_expansion_binding_t *bindings,
             return ESP_ERR_INVALID_ARG;
         }
     }
-    return have_spi && have_cs && *dc >= 0 ? ESP_OK : ESP_ERR_INVALID_ARG;
+    return have_spi && *dc >= 0 ? ESP_OK : ESP_ERR_INVALID_ARG;
 }
 
 static esp_err_t runtime_ready(solar_os_board_display_t *display)
@@ -223,7 +232,7 @@ static esp_err_t register_auxiliary(tft_device_t *attached)
 static esp_err_t attach_tft(const char *name,
                             const solar_os_expansion_binding_t *bindings,
                             size_t binding_count,
-                            bool st7796)
+                            int controller)
 {
     char spi_bus[SOLAR_OS_EXPANSION_TARGET_MAX];
     int cs = -1;
@@ -232,6 +241,8 @@ static esp_err_t attach_tft(const char *name,
     int backlight = -1;
     bool active_high = true;
     bool pwm = false;
+    const bool st7796 = controller == 1;
+    const bool st7789 = controller == 2;
     if (device != NULL || name == NULL || name[0] == '\0') {
         return ESP_ERR_INVALID_STATE;
     }
@@ -246,6 +257,29 @@ static esp_err_t attach_tft(const char *name,
                                        &pwm),
                         "tft",
                         "invalid bindings");
+#if defined(SOLAR_OS_BOARD_PCA9557_I2C_BUS) && defined(SOLAR_OS_BOARD_PCA9557_I2C_ADDR)
+    if (cs < 0) {
+        esp_err_t pca_err = solar_os_bus_acquire(
+            SOLAR_OS_BOARD_PCA9557_I2C_BUS,
+            SOLAR_OS_BUS_PROTOCOL_I2C, "tft_pca9557");
+        if (pca_err == ESP_OK) {
+            /* bit0=LCD_CS (active low, hold selected), bit1=PA_EN off,
+             * bit2=DVP_PWDN off. LCD CS lives on the PCA9557, so the SPI
+             * driver has no GPIO to assert it; hold it low permanently. */
+            const uint8_t pca9557_init_data[] = {0x04};
+            solar_os_bus_i2c_write_reg(SOLAR_OS_BOARD_PCA9557_I2C_BUS,
+                                       SOLAR_OS_BOARD_PCA9557_I2C_ADDR,
+                                       0x01, pca9557_init_data, 1);
+            const uint8_t pca9557_cfg[] = {0xf8};
+            solar_os_bus_i2c_write_reg(SOLAR_OS_BOARD_PCA9557_I2C_BUS,
+                                       SOLAR_OS_BOARD_PCA9557_I2C_ADDR,
+                                       0x03, pca9557_cfg, 1);
+            solar_os_bus_release(SOLAR_OS_BOARD_PCA9557_I2C_BUS,
+                                 SOLAR_OS_BUS_PROTOCOL_I2C, "tft_pca9557");
+        }
+        cs = GPIO_NUM_NC;
+    }
+#endif
     device = heap_caps_calloc(1, sizeof(*device), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if (device == NULL) {
         return ESP_ERR_NO_MEM;
@@ -263,17 +297,20 @@ static esp_err_t attach_tft(const char *name,
         .width = SOLAR_OS_BOARD_DISPLAY_NATIVE_WIDTH,
         .height = SOLAR_OS_BOARD_DISPLAY_NATIVE_HEIGHT,
 #else
-        .width = st7796 ? 320 : 240,
-        .height = st7796 ? 480 : 320,
+        .width = (st7796 || st7789) ? 320 : 240,
+        .height = (st7796 || st7789) ? 480 : 320,
 #endif
 #ifdef SOLAR_OS_BOARD_DISPLAY_MADCTL
         .madctl = SOLAR_OS_BOARD_DISPLAY_MADCTL,
 #else
-        .madctl = st7796 ? 0x48 : 0x88,
+        .madctl = (st7796 || st7789) ? 0x48 : 0x88,
 #endif
         .col_offset = SOLAR_OS_BOARD_DISPLAY_COL_OFFSET,
         .row_offset = SOLAR_OS_BOARD_DISPLAY_ROW_OFFSET,
         .st7796 = st7796,
+        .st7789 = st7789,
+        .spi_mode = SOLAR_OS_BOARD_DISPLAY_SPI_MODE,
+        .invert_colors = SOLAR_OS_BOARD_DISPLAY_INVERT_COLORS,
         .backlight_active_high = active_high,
         .backlight_pwm = pwm,
         .backlight_pulse_steps = SOLAR_OS_BOARD_LCD_BACKLIGHT_PULSE_STEPS,
@@ -292,17 +329,19 @@ static esp_err_t attach_tft(const char *name,
     }
     strlcpy(device->name, name, sizeof(device->name));
     u8g2_t *const u8g2 = tft_ili9341_get_u8g2(&device->driver);
+    const char *driver_name = st7789 ? "st7789" : (st7796 ? "st7796" : "ili9341");
+    const char *controller_name = st7789 ? "ST7789" : (st7796 ? "ST7796" : "ILI9341");
     device->display = (solar_os_board_display_t) {
         .ops = &display_ops,
         .driver = &device->driver,
-        .driver_name = st7796 ? "st7796" : "ili9341",
+        .driver_name = driver_name,
         .u8g2 = u8g2,
-        .controller = st7796 ? "ST7796" : "ILI9341",
+        .controller = controller_name,
         .width = u8g2_GetDisplayWidth(u8g2),
         .height = u8g2_GetDisplayHeight(u8g2),
         .surface_formats = SOLAR_OS_DISPLAY_FORMAT_INDEX8_BIT,
         .frame_formats = SOLAR_OS_DISPLAY_FORMAT_INDEX2_BIT,
-        .preferred_stream_fps = st7796 ? 25 : 30,
+        .preferred_stream_fps = (st7796 || st7789) ? 25 : 30,
         .max_stream_pixels_per_second = 1600000U,
         .ready = true,
     };
@@ -324,14 +363,21 @@ static esp_err_t attach_ili9341(const char *name,
                                 const solar_os_expansion_binding_t *bindings,
                                 size_t binding_count)
 {
-    return attach_tft(name, bindings, binding_count, false);
+    return attach_tft(name, bindings, binding_count, 0);
 }
 
 static esp_err_t attach_st7796(const char *name,
-                               const solar_os_expansion_binding_t *bindings,
-                               size_t binding_count)
+                                const solar_os_expansion_binding_t *bindings,
+                                size_t binding_count)
 {
-    return attach_tft(name, bindings, binding_count, true);
+    return attach_tft(name, bindings, binding_count, 1);
+}
+
+static esp_err_t attach_st7789(const char *name,
+                                const solar_os_expansion_binding_t *bindings,
+                                size_t binding_count)
+{
+    return attach_tft(name, bindings, binding_count, 2);
 }
 
 static esp_err_t detach(const char *name)
@@ -355,7 +401,7 @@ static esp_err_t detach(const char *name)
 static const int bool_values[] = {0, 1};
 static const solar_os_expansion_binding_spec_t binding_specs[] = {
     {.key = "spi", .value_hint = "bus", .kind = SOLAR_OS_EXPANSION_BINDING_SPI_BUS, .required = true},
-    {.key = "cs", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_SPI_CS, .required = true},
+    {.key = "cs", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_SPI_CS, .required = false},
     {.key = "dc", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_GPIO, .role = "dc", .required = true},
     {.key = "reset", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_GPIO, .role = "reset"},
     {.key = "bl", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_GPIO, .role = "bl"},
@@ -388,5 +434,17 @@ const solar_os_expansion_driver_t solar_os_st7796_expansion_driver = {
     .binding_specs = binding_specs,
     .binding_spec_count = sizeof(binding_specs) / sizeof(binding_specs[0]),
     .attach = attach_st7796,
+    .detach = detach,
+};
+
+const solar_os_expansion_driver_t solar_os_st7789_expansion_driver = {
+    .name = "st7789",
+    .category = SOLAR_OS_EXPANSION_CATEGORY_DISPLAY,
+    .summary = "320x240 color TFT",
+    .required_capabilities = TFT_CAPABILITIES,
+    .early = true,
+    .binding_specs = binding_specs,
+    .binding_spec_count = sizeof(binding_specs) / sizeof(binding_specs[0]),
+    .attach = attach_st7789,
     .detach = detach,
 };

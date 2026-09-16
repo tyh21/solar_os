@@ -159,6 +159,25 @@ def c_string(value: str) -> str:
 def parse_front_matter(path: Path) -> tuple[dict[str, object], str]:
     source = path.read_text(encoding="utf-8")
     lines = source.splitlines()
+    # Skip an optional AIGC watermark YAML block (---\nAIGC:\n...\n---) that
+    # tooling may prepend to the file; it is not part of the manual metadata.
+    if (
+        len(lines) >= 2
+        and lines[0].strip() == "---"
+        and lines[1].strip().startswith("AIGC:")
+    ):
+        try:
+            watermark_end = next(
+                index
+                for index, line in enumerate(lines[2:], start=2)
+                if line.strip() == "---"
+            )
+        except StopIteration:
+            raise ValueError(f"{path}: unterminated AIGC watermark block")
+        lines = lines[watermark_end + 1 :]
+    # Ignore blank lines between the watermark and the front matter.
+    while lines and not lines[0].strip():
+        lines = lines[1:]
     if not lines or lines[0].strip() != FRONT_MATTER_DELIMITER:
         raise ValueError(f"{path}: missing opening {FRONT_MATTER_DELIMITER}")
     try:

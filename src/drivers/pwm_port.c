@@ -121,17 +121,27 @@ esp_err_t pwm_port_set(gpio_num_t pin, uint32_t freq_hz, uint8_t duty_percent)
     if (ret == ESP_OK) {
         const uint32_t duty_raw =
             ((uint32_t)duty_percent * PWM_PORT_DUTY_RAW_MAX + 50U) / 100U;
-        ledc_channel_config_t channel_config = {
-            .gpio_num = pin,
-            .speed_mode = LEDC_LOW_SPEED_MODE,
-            .channel = slot->channel,
-            .intr_type = LEDC_INTR_DISABLE,
-            .timer_sel = LEDC_TIMER_0,
-            .duty = duty_raw,
-            .hpoint = 0,
-            .sleep_mode = LEDC_SLEEP_MODE_NO_ALIVE_NO_PD,
-        };
-        ret = ledc_channel_config(&channel_config);
+        if (slot->active && slot->pin == pin) {
+            /* Channel already routed to this pin: refresh duty only.
+             * Re-running ledc_channel_config would re-reserve the GPIO and
+             * emit bogus "not usable" warnings on every update. */
+            ret = ledc_set_duty(LEDC_LOW_SPEED_MODE, slot->channel, duty_raw);
+            if (ret == ESP_OK) {
+                ret = ledc_update_duty(LEDC_LOW_SPEED_MODE, slot->channel);
+            }
+        } else {
+            ledc_channel_config_t channel_config = {
+                .gpio_num = pin,
+                .speed_mode = LEDC_LOW_SPEED_MODE,
+                .channel = slot->channel,
+                .intr_type = LEDC_INTR_DISABLE,
+                .timer_sel = LEDC_TIMER_0,
+                .duty = duty_raw,
+                .hpoint = 0,
+                .sleep_mode = LEDC_SLEEP_MODE_NO_ALIVE_NO_PD,
+            };
+            ret = ledc_channel_config(&channel_config);
+        }
         if (ret == ESP_OK) {
             slot->active = true;
             slot->pin = pin;

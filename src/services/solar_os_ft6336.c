@@ -35,9 +35,9 @@ static esp_err_t parse_bindings(const solar_os_expansion_binding_t *bindings,
 {
     bool have_i2c = false;
     bool have_address = false;
+    bool have_rotation = false;
     bool have_reset = false;
     bool have_irq = false;
-    bool have_rotation = false;
 
     if (bindings == NULL || device == NULL) {
         return ESP_ERR_INVALID_ARG;
@@ -88,7 +88,7 @@ static esp_err_t parse_bindings(const solar_os_expansion_binding_t *bindings,
         }
     }
 
-    return have_i2c && have_address && have_reset && have_irq && have_rotation
+    return have_i2c && have_address && have_rotation
         ? ESP_OK
         : ESP_ERR_INVALID_ARG;
 }

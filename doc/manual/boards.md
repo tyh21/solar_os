@@ -1,3 +1,14 @@
+---
+AIGC:
+  ContentProducer: '001191110102MAD55U9H0F10002'
+  ContentPropagator: '001191110102MAD55U9H0F10002'
+  Label: '1'
+  ProduceID: '20fbf035-eef9-4988-8c32-3e1fb9292e7f'
+  PropagateID: '20fbf035-eef9-4988-8c32-3e1fb9292e7f'
+  ReservedCode1: 'e4c0edd2-29b5-4f9b-a375-3b254ca26394'
+  ReservedCode2: 'e4c0edd2-29b5-4f9b-a375-3b254ca26394'
+---
+
 +++
 id = "boards"
 title = "Boards and hardware targets"
@@ -180,6 +191,7 @@ The current tree includes these board targets:
 | `esp32_devkitc_v4_wrover` | `esp32_devkitc_v4_wrover` | Espressif ESP32-DevKitC V4 with ESP32-WROVER-E | Headless classic ESP32 target with PSRAM, UART, Wi-Fi, BLE, a GPIO0 BOOT/KEY button, expansion I2C/SPI/UART/GPIO/ADC/PWM/I2S, graphics through attachable display targets, and no built-in peripherals. |
 | `devkitc1_epaper_workbench` | `esp32_s3_devkitc1_n16r8` with `SOLAR_OS_BOARD=devkitc1_epaper_workbench` | ESP32-S3 DevKitC-1 E-paper Workbench | Manifest-generated development target with fixed CardKB, 400x300 SSD1683 display, and SDSPI storage attachments. |
 | `t_lora_pager` | `t_lora_pager` | LilyGO T-LoRa-Pager (SX1262) | ESP32-S3-WROOM-1-N16R8 target with a 480x222 ST7796 display, a TCA8418 4x10 matrix keyboard, an SX1262 LoRa radio, PCF85063 RTC, microSD over SDSPI, ES8311 audio, a BQ27220 battery gauge, a rotary encoder, an XL9555 I2C GPIO expander that power-sequences the keyboard/radio/SD rails, native USB CDC, Wi-Fi, BLE, and expansion I2C/SPI/UART/GPIO/ADC/PWM. GNSS, NFC, IMU, haptic, and BQ25896 charger controls are not available. |
+| `handheld_esp32_s3` | `handheld_esp32_s3` | LCSC Handheld ESP32-S3 (ESP32-S3-WROOM-1-N16R8) | Handheld target with a 320x240 ST7789 display (LCD CS on a PCA9557 I/O expander at I2C 0x19, SPI3 at 80 MHz, inverted-color panel), FT5x06 capacitive touch at 0x38 with no dedicated reset/irq lines, ES8311 speaker and ES7210 microphone over I2S0 (PA enable on the PCA9557), one-bit SDMMC, GPIO0 BOOT/KEY button, native USB CDC, Wi-Fi, BLE, and expansion I2C/SPI/UART/GPIO/ADC/PWM/I2S. Camera and IMU are not available. |
 
 ## Generated Build Interface
 
@@ -1116,3 +1128,5 @@ Select the PlatformIO environment matching the physical target. Board profiles
 declare capabilities and drivers; flavors select packages within those
 capabilities. The built-in target table, pin rules, display/storage/audio
 details, porting procedure, and validation checklist are maintained here.
+
+> AI生成

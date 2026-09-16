@@ -420,6 +420,49 @@ kind = "parameter"
 hint = "0|1"
 allowed = [0, 1]
 
+[drivers.st7789]
+summary = "320x240 color TFT"
+package = "driver_display_st7789"
+targets = ["esp32", "esp32s3"]
+capabilities = ["gfx", "expansion_spi", "expansion_gpio"]
+board_capabilities = ["display", "gfx"]
+board_driver = "display_st7789"
+board_defines = { SOLAR_OS_BOARD_DISPLAY_CONTROLLER = '"ST7789"', SOLAR_OS_BOARD_DISPLAY_WIDTH = "320", SOLAR_OS_BOARD_DISPLAY_HEIGHT = "240" }
+early = true
+default_name = "display0"
+[[drivers.st7789.bindings]]
+key = "spi"
+kind = "spi_bus"
+hint = "bus"
+required = true
+[[drivers.st7789.bindings]]
+key = "cs"
+kind = "spi_cs"
+hint = "gpio"
+[[drivers.st7789.bindings]]
+key = "dc"
+kind = "gpio"
+hint = "gpio"
+required = true
+[[drivers.st7789.bindings]]
+key = "reset"
+kind = "gpio"
+hint = "gpio"
+[[drivers.st7789.bindings]]
+key = "bl"
+kind = "gpio"
+hint = "gpio"
+[[drivers.st7789.bindings]]
+key = "active"
+kind = "parameter"
+hint = "0|1"
+allowed = [0, 1]
+[[drivers.st7789.bindings]]
+key = "pwm"
+kind = "parameter"
+hint = "0|1"
+allowed = [0, 1]
+
 [drivers.cvbs-pal]
 summary = "PAL composite video"
 package = "driver_display_cvbs_pal"
@@ -501,6 +544,7 @@ targets = ["esp32", "esp32s3"]
 capabilities = ["expansion_i2c", "expansion_gpio", "gfx"]
 board_capabilities = ["pointer"]
 board_driver = "pointer_ft6336"
+early = true
 default_name = "touch0"
 [[drivers.ft6336.bindings]]
 key = "i2c"
@@ -517,12 +561,10 @@ allowed = [0x38]
 key = "reset"
 kind = "gpio"
 hint = "gpio"
-required = true
 [[drivers.ft6336.bindings]]
 key = "irq"
 kind = "gpio"
 hint = "gpio"
-required = true
 [[drivers.ft6336.bindings]]
 key = "rotation"
 kind = "parameter"
@@ -729,7 +771,7 @@ required = true
 key = "pa"
 kind = "gpio"
 hint = "gpio"
-required = true
+required = false
 
 [drivers.es8311-duplex]
 summary = "ES8311 duplex audio"

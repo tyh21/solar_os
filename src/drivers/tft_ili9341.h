@@ -27,6 +27,9 @@ typedef struct {
     uint16_t row_offset;
     uint8_t madctl;
     bool st7796;
+    bool st7789;
+    uint8_t spi_mode;
+    bool invert_colors;
     bool backlight_active_high;
     bool backlight_pwm;
     /* >0 selects a single-wire pulse dimmer (AW9364 class) with this many

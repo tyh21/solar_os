@@ -1028,7 +1028,46 @@ static esp_err_t ili9341_full_init(tft_ili9341_t *display) {
   }
   vTaskDelay(pdMS_TO_TICKS(120));
 
-  if (display->config.st7796) {
+  if (display->config.st7789) {
+    const uint8_t madctl[] = {display->config.madctl};
+    const uint8_t colmod[] = {0x55};
+    const uint8_t porctrl[] = {0x0c, 0x0c, 0x00, 0x33, 0x33};
+    const uint8_t gctrl[] = {0x35};
+    const uint8_t vrhs[] = {0x0b};
+    const uint8_t vdvs[] = {0x20};
+    const uint8_t vcoms[] = {0x20};
+    const uint8_t frctrl2[] = {0x0f};
+    const uint8_t pwctrl1[] = {0xa4, 0xa1};
+    const uint8_t gamma[] = {0x01};
+    const uint8_t pgamma[] = {
+        0xd0, 0x00, 0x02, 0x07, 0x0a, 0x28, 0x32, 0x44,
+        0x42, 0x06, 0x0e, 0x12, 0x14, 0x17,
+    };
+    const uint8_t ngamma[] = {
+        0xd0, 0x00, 0x02, 0x07, 0x0a, 0x28, 0x31, 0x54,
+        0x47, 0x0e, 0x1c, 0x17, 0x1b, 0x1e,
+    };
+
+    if (!ili9341_checked_cmd(display, 0x11)) {
+      return display->last_error;
+    }
+    vTaskDelay(pdMS_TO_TICKS(120));
+    if (!ili9341_checked_cmd_data(display, 0x36, madctl, sizeof(madctl)) ||
+        !ili9341_checked_cmd_data(display, 0x3a, colmod, sizeof(colmod)) ||
+        !ili9341_checked_cmd_data(display, 0xb2, porctrl, sizeof(porctrl)) ||
+        !ili9341_checked_cmd_data(display, 0xb7, gctrl, sizeof(gctrl)) ||
+        !ili9341_checked_cmd_data(display, 0xbb, vrhs, sizeof(vrhs)) ||
+        !ili9341_checked_cmd_data(display, 0xc3, vdvs, sizeof(vdvs)) ||
+        !ili9341_checked_cmd_data(display, 0xc4, vcoms, sizeof(vcoms)) ||
+        !ili9341_checked_cmd_data(display, 0xc6, frctrl2, sizeof(frctrl2)) ||
+        !ili9341_checked_cmd_data(display, 0xd0, pwctrl1, sizeof(pwctrl1)) ||
+        !ili9341_checked_cmd_data(display, 0x26, gamma, sizeof(gamma)) ||
+        !ili9341_checked_cmd_data(display, 0xe0, pgamma, sizeof(pgamma)) ||
+        !ili9341_checked_cmd_data(display, 0xe1, ngamma, sizeof(ngamma))) {
+      return display->last_error;
+    }
+    vTaskDelay(pdMS_TO_TICKS(120));
+  } else if (display->config.st7796) {
     const uint8_t f0_enable_1[] = {0xc3};
     const uint8_t f0_enable_2[] = {0x96};
     const uint8_t madctl[] = {display->config.madctl};
@@ -1134,8 +1173,9 @@ static esp_err_t ili9341_full_init(tft_ili9341_t *display) {
   if (!ili9341_checked_cmd(display, 0x29)) {
     return display->last_error;
   }
-  /* The FNK0104S panel requires display inversion on for literal RGB colors. */
-  if (display->config.st7796 && !ili9341_checked_cmd(display, 0x21)) {
+  /* ST7796 (FNK0104S) and ST7789 panels need inversion-on for correct RGB. */
+  if ((display->config.st7796 || display->config.invert_colors) &&
+      !ili9341_checked_cmd(display, 0x21)) {
     return display->last_error;
   }
   vTaskDelay(pdMS_TO_TICKS(20));
@@ -1196,7 +1236,7 @@ static uint8_t ili9341_u8x8_display_cb(u8x8_t *u8x8, uint8_t message,
 esp_err_t tft_ili9341_init(tft_ili9341_t *display,
                            const tft_ili9341_config_t *config) {
   if (display == NULL || config == NULL || config->spi_bus == NULL ||
-      config->spi_bus[0] == '\0' || !gpio_valid(config->cs_pin) ||
+      config->spi_bus[0] == '\0' ||
       !gpio_valid(config->dc_pin) || config->width == 0 ||
       config->height == 0 || config->width > 480 || config->height > 480) {
     return ESP_ERR_INVALID_ARG;
@@ -1233,8 +1273,9 @@ esp_err_t tft_ili9341_init(tft_ili9341_t *display,
 
   const spi_device_interface_config_t device_config = {
       .clock_speed_hz = (int)display->config.spi_clock_hz,
-      .mode = 0,
-      .spics_io_num = display->config.cs_pin,
+      .mode = display->config.spi_mode,
+      .spics_io_num = gpio_valid(display->config.cs_pin) ?
+          display->config.cs_pin : GPIO_NUM_NC,
       .queue_size = 2,
       .flags = SPI_DEVICE_HALFDUPLEX,
   };
