@@ -14,6 +14,7 @@ typedef struct {
     int din_pin;
     int dout_pin;
     int pa_pin;
+    int in_addr;
 } audio_codec_bindings_t;
 
 static esp_err_t parse_bindings(const solar_os_expansion_binding_t *bindings,
@@ -31,11 +32,14 @@ static esp_err_t parse_bindings(const solar_os_expansion_binding_t *bindings,
         .din_pin = -1,
         .dout_pin = -1,
         .pa_pin = -1,
+        .in_addr = -1,
     };
     for (size_t i = 0; i < count; i++) {
         const solar_os_expansion_binding_t *binding = &bindings[i];
         if (binding->kind == SOLAR_OS_EXPANSION_BINDING_I2C_BUS) {
             parsed->i2c_bus = binding->target;
+        } else if (binding->kind == SOLAR_OS_EXPANSION_BINDING_I2C_ADDRESS) {
+            parsed->in_addr = binding->value;
         } else if (binding->kind == SOLAR_OS_EXPANSION_BINDING_I2S_PORT) {
             parsed->i2s_port = binding->value;
         } else if (binding->kind == SOLAR_OS_EXPANSION_BINDING_GPIO) {
@@ -81,6 +85,7 @@ static esp_err_t attach_codec(const char *name,
         .din_pin = parsed.din_pin,
         .dout_pin = parsed.dout_pin,
         .pa_pin = parsed.pa_pin,
+        .in_addr = parsed.in_addr,
     };
     return audio_codec_board_attach(name, &config);
 }
@@ -108,6 +113,7 @@ static const solar_os_expansion_binding_spec_t binding_specs[] = {
     {.key = "din", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_GPIO, .role = "din", .required = true},
     {.key = "dout", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_GPIO, .role = "dout", .required = true},
     {.key = "pa", .value_hint = "gpio", .kind = SOLAR_OS_EXPANSION_BINDING_GPIO, .role = "pa", .required = false},
+    {.key = "addr", .value_hint = "0x41", .kind = SOLAR_OS_EXPANSION_BINDING_I2C_ADDRESS, .required = false},
 };
 
 const solar_os_expansion_driver_t solar_os_es8311_es7210_expansion_driver = {

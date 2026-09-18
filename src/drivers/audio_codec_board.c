@@ -317,7 +317,8 @@ static esp_err_t audio_codec_ensure_input(void)
     i2c_bus_lock();
     audio_codec_i2c_cfg_t i2c = {
         .port = audio_codec.config.i2c_port,
-        .addr = ES7210_CODEC_DEFAULT_ADDR,
+        .addr = audio_codec.config.in_addr > 0 ?
+            (uint8_t)(audio_codec.config.in_addr << 1) : ES7210_CODEC_DEFAULT_ADDR,
         .bus_handle = audio_codec.config.i2c_handle,
     };
     if (audio_codec.in_ctrl_if == NULL) {

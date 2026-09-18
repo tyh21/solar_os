@@ -3,10 +3,10 @@ AIGC:
   ContentProducer: '001191110102MAD55U9H0F10002'
   ContentPropagator: '001191110102MAD55U9H0F10002'
   Label: '1'
-  ProduceID: '20fbf035-eef9-4988-8c32-3e1fb9292e7f'
-  PropagateID: '20fbf035-eef9-4988-8c32-3e1fb9292e7f'
-  ReservedCode1: 'e4c0edd2-29b5-4f9b-a375-3b254ca26394'
-  ReservedCode2: 'e4c0edd2-29b5-4f9b-a375-3b254ca26394'
+  ProduceID: 'c12c0165-230d-4ba6-960c-97f48653d455'
+  PropagateID: 'c12c0165-230d-4ba6-960c-97f48653d455'
+  ReservedCode1: 'c96313ca-48af-488b-95df-0b2e63e5759a'
+  ReservedCode2: 'c96313ca-48af-488b-95df-0b2e63e5759a'
 ---
 
 +++
@@ -192,6 +192,7 @@ The current tree includes these board targets:
 | `devkitc1_epaper_workbench` | `esp32_s3_devkitc1_n16r8` with `SOLAR_OS_BOARD=devkitc1_epaper_workbench` | ESP32-S3 DevKitC-1 E-paper Workbench | Manifest-generated development target with fixed CardKB, 400x300 SSD1683 display, and SDSPI storage attachments. |
 | `t_lora_pager` | `t_lora_pager` | LilyGO T-LoRa-Pager (SX1262) | ESP32-S3-WROOM-1-N16R8 target with a 480x222 ST7796 display, a TCA8418 4x10 matrix keyboard, an SX1262 LoRa radio, PCF85063 RTC, microSD over SDSPI, ES8311 audio, a BQ27220 battery gauge, a rotary encoder, an XL9555 I2C GPIO expander that power-sequences the keyboard/radio/SD rails, native USB CDC, Wi-Fi, BLE, and expansion I2C/SPI/UART/GPIO/ADC/PWM. GNSS, NFC, IMU, haptic, and BQ25896 charger controls are not available. |
 | `handheld_esp32_s3` | `handheld_esp32_s3` | LCSC Handheld ESP32-S3 (ESP32-S3-WROOM-1-N16R8) | Handheld target with a 320x240 ST7789 display (LCD CS on a PCA9557 I/O expander at I2C 0x19, SPI3 at 80 MHz, inverted-color panel), FT5x06 capacitive touch at 0x38 with no dedicated reset/irq lines, ES8311 speaker and ES7210 microphone over I2S0 (PA enable on the PCA9557), one-bit SDMMC, GPIO0 BOOT/KEY button, native USB CDC, Wi-Fi, BLE, and expansion I2C/SPI/UART/GPIO/ADC/PWM/I2S. Camera and IMU are not available. |
+| `waveshare_esp32_s3_touch_lcd_3_5b` | `waveshare_esp32_s3_touch_lcd_3_5b` | Waveshare ESP32-S3-Touch-LCD-3.5B | ESP32-S3-WROOM-1-N16R8 target with a 320x480 AXS15231B QSPI display (40 MHz quad SPI on SPI2, panel reset on a TCA9554 expander at I2C 0x20, AXP2101 PMIC at 0x34), AXS15231B capacitive touch at I2C 0x3B, ES8311 audio over I2S0, one-bit SDMMC, PCF85063 RTC, GPIO0 BOOT/KEY button, native USB CDC, TX-only UART console (GPIO44 is wired to audio MCLK), Wi-Fi, BLE, and expansion I2C/GPIO/ADC/PWM/I2S. Camera and IMU are not available. |
 
 ## Generated Build Interface
 

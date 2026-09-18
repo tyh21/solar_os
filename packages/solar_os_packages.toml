@@ -511,6 +511,22 @@ label = "ST7789 display"
 category = "Expansion hardware"
 members = ["driver_display_st7789"]
 
+[groups.axs15231b]
+label = "AXS15231B QSPI display"
+category = "Expansion hardware"
+members = ["driver_display_axs15231b"]
+
+[groups.axs15231b_touch]
+label = "AXS15231B touch controller"
+category = "Expansion hardware"
+members = ["driver_axs15231b_touch"]
+
+[groups.wave35b_core]
+label = "Waveshare 3.5B board core"
+category = "Internal"
+hidden = true
+members = ["board_wave35b_core"]
+
 [groups.cvbs]
 label = "PAL composite display"
 category = "Expansion hardware"
@@ -1498,6 +1514,45 @@ sources = [
 ]
 requires = ["esp_driver_gpio", "esp_driver_spi", "u8g2"]
 capabilities = ["gfx", "expansion_gpio"]
+
+[packages.driver_display_axs15231b]
+label = "driver.display-axs15231b"
+targets = ["esp32s3"]
+expansion_drivers = ["solar_os_axs15231b_display_expansion_driver"]
+depends = ["service_expansion", "service_pwm"]
+sources = [
+  "board/solar_os_board_display_expansion.c",
+  "drivers/axs15231b.c",
+  "drivers/tft_ili9341.c",
+  "services/solar_os_axs15231b_display.c",
+  "services/solar_os_axs15231b_display_driver.c",
+]
+requires = ["esp_driver_gpio", "esp_driver_spi", "u8g2"]
+capabilities = ["gpio", "pwm"]
+
+[packages.driver_axs15231b_touch]
+label = "driver.touch-axs15231b"
+targets = ["esp32s3"]
+expansion_drivers = ["solar_os_axs15231b_touch_expansion_driver"]
+depends = ["service_expansion", "service_i2c"]
+sources = [
+  "services/solar_os_axs15231b_touch.c",
+  "services/solar_os_axs15231b_touch_driver.c",
+]
+requires = ["esp_driver_gpio", "esp_driver_i2c"]
+capabilities = ["i2c"]
+
+[packages.board_wave35b_core]
+label = "board.wave35b-core"
+targets = ["esp32s3"]
+expansion_drivers = ["solar_os_wave35b_core_expansion_driver"]
+depends = ["service_expansion", "service_i2c"]
+sources = [
+  "services/solar_os_wave35b_core.c",
+  "services/solar_os_wave35b_core_driver.c",
+]
+requires = ["esp_driver_i2c"]
+capabilities = ["i2c"]
 
 [packages.driver_display_cvbs_pal]
 label = "driver.display-cvbs-pal"

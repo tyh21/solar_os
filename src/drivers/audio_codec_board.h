@@ -47,6 +47,7 @@ typedef struct {
     int din_pin;
     int dout_pin;
     int pa_pin;
+    int in_addr; /* 7-bit I2C address of the input codec; <= 0 uses the driver default */
 } audio_codec_board_config_t;
 
 esp_err_t audio_codec_board_attach(const char *name,

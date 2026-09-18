@@ -6,6 +6,8 @@
 #include "esp_check.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_lcd_panel_io.h"
+#include "solar_os_log.h"
 #include "esp_rom_sys.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -55,6 +57,9 @@ static uint64_t gpio_pin_mask(gpio_num_t pin) {
 }
 
 static esp_err_t ili9341_tx_byte(tft_ili9341_t *display, uint8_t value) {
+  if (display->panel_io) {
+    return esp_lcd_panel_io_tx_param(display->panel_io, value, NULL, 0);
+  }
   spi_transaction_t transaction = {
       .flags = SPI_TRANS_USE_TXDATA,
       .length = 8,
@@ -66,6 +71,10 @@ static esp_err_t ili9341_tx_byte(tft_ili9341_t *display, uint8_t value) {
 
 static esp_err_t ili9341_tx_bytes(tft_ili9341_t *display, const uint8_t *data,
                                   size_t length) {
+  if (display->panel_io) {
+    /* esp_lcd_panel_io_tx_param sends data with DC=1 (data phase) */
+    return esp_lcd_panel_io_tx_param(display->panel_io, -1, data, length);
+  }
   while (length > 0) {
     const size_t chunk =
         length > display->line_buffer_size ? display->line_buffer_size : length;
@@ -88,6 +97,17 @@ static esp_err_t ili9341_tx_bytes(tft_ili9341_t *display, const uint8_t *data,
 
 static esp_err_t ili9341_cmd_data(tft_ili9341_t *display, uint8_t command,
                                   const uint8_t *data, size_t length) {
+  if (display->panel_io) {
+    /* esp_lcd_panel_io_tx_param handles DC automatically:
+     * command byte with DC=0, parameter bytes with DC=1 */
+    if (display->config.axs15231b) {
+      /* AXS QSPI protocol: opcode 0x02 in the single-wire command phase,
+       * controller command + parameters follow in the 32-bit frame. */
+      const int cmd32 = (int)(0x02000000UL | ((uint32_t)command << 8));
+      return esp_lcd_panel_io_tx_param(display->panel_io, cmd32, data, length);
+    }
+    return esp_lcd_panel_io_tx_param(display->panel_io, command, data, length);
+  }
   ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 0), TAG,
                       "dc command failed");
   ESP_RETURN_ON_ERROR(ili9341_tx_byte(display, command), TAG,
@@ -245,8 +265,10 @@ static esp_err_t ili9341_configure_control_pins(tft_ili9341_t *display) {
       .intr_type = GPIO_INTR_DISABLE,
   };
   ESP_RETURN_ON_ERROR(gpio_config(&io_config), TAG, "gpio config failed");
-  ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
-                      "dc high failed");
+  if (gpio_valid(display->config.dc_pin)) {
+    ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
+                        "dc high failed");
+  }
   if (gpio_valid(display->config.reset_pin)) {
     ESP_RETURN_ON_ERROR(gpio_set_level(display->config.reset_pin, 1), TAG,
                         "rst high failed");
@@ -300,20 +322,158 @@ static void ili9341_fill_line(tft_ili9341_t *display, uint16_t rgb565,
   solar_os_vector_fill_rgb565_be(display->line_buffer, rgb565, pixels);
 }
 
+/* ---- AXS15231B QSPI streaming helpers ------------------------------------
+ * The QSPI write protocol has no row-address window: after CASET selects the
+ * column window, pixel data fills the frame linearly. Every CS transaction
+ * must begin with a command frame, so the first row is sent with RAMWR
+ * (0x2C) and every subsequent row with RAMWRC (0x3C, Memory Write Continue),
+ * which resumes the GRAM pointer where the previous transaction stopped.
+ * A command-less data transaction is not recognized by the panel. */
+
+static const int AXS_RAMWR_CMD =
+    (int)(0x32000000UL | (0x2CUL << 8));
+static const int AXS_RAMWRC_CMD =
+    (int)(0x32000000UL | (0x3CUL << 8));
+
+typedef void (*ili9341_line_renderer_t)(tft_ili9341_t *display,
+                                        const void *context,
+                                        uint16_t row,
+                                        uint16_t width,
+                                        uint8_t *output);
+
+static esp_err_t axs_send_case_window(tft_ili9341_t *display,
+                                      uint16_t x0, uint16_t x1) {
+  const uint8_t col[] = {
+      (uint8_t)(x0 >> 8),
+      (uint8_t)(x0 & 0xff),
+      (uint8_t)(x1 >> 8),
+      (uint8_t)(x1 & 0xff),
+  };
+  return ili9341_cmd_data(display, 0x2a, col, sizeof(col));
+}
+
+/* Streams `height` rows rendered by `render` (called with the row index and a
+ * caller-supplied width) through the QSPI panel, using the two DMA line
+ * buffers in alternation. `width` must equal the panel width. */
+static esp_err_t axs_stream_rendered_lines(
+    tft_ili9341_t *display, uint16_t width, uint16_t height,
+    ili9341_line_renderer_t render, const void *context) {
+  const size_t row_bytes = (size_t)width * 2U;
+  for (uint16_t row = 0U; row < height;) {
+    render(display, context, row, width, display->line_buffer);
+    esp_err_t err = esp_lcd_panel_io_tx_color(
+        display->panel_io, row == 0U ? AXS_RAMWR_CMD : AXS_RAMWRC_CMD,
+        display->line_buffer, row_bytes);
+    ESP_RETURN_ON_ERROR(err, TAG, "axs stream chunk failed");
+    row++;
+    if (row >= height) {
+      break;
+    }
+    render(display, context, row, width, display->line_buffer_alt);
+    err = esp_lcd_panel_io_tx_color(display->panel_io, AXS_RAMWRC_CMD,
+                                    display->line_buffer_alt, row_bytes);
+    ESP_RETURN_ON_ERROR(err, TAG, "axs stream chunk failed");
+    row++;
+  }
+  return ESP_OK;
+}
+
+static esp_err_t axs_fill_screen(tft_ili9341_t *display, uint16_t rgb565) {
+  ESP_RETURN_ON_ERROR(
+      axs_send_case_window(display, 0, (uint16_t)(display->config.width - 1U)),
+      TAG, "axs window failed");
+  ili9341_fill_line(display, rgb565, display->config.width);
+  const size_t row_bytes = (size_t)display->config.width * 2U;
+  ESP_RETURN_ON_ERROR(
+      esp_lcd_panel_io_tx_color(display->panel_io, AXS_RAMWR_CMD,
+                                display->line_buffer, row_bytes),
+      TAG, "axs fill start failed");
+  for (uint16_t row = 1U; row < display->config.height; row++) {
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_color(display->panel_io, AXS_RAMWRC_CMD,
+                                  display->line_buffer, row_bytes),
+        TAG, "axs fill chunk failed");
+  }
+  return ESP_OK;
+}
+
+static esp_err_t axs_compose_tile(tft_ili9341_t *display,
+                                  const uint8_t *tile_data,
+                                  uint8_t x_pos, uint8_t y_pos,
+                                  uint8_t count) {
+  const uint16_t panel_width = display->config.width;
+  const uint8_t width = (uint8_t)(count > display->tile_width - x_pos
+                                      ? display->tile_width - x_pos
+                                      : count);
+  for (uint8_t tile = 0U; tile < width; tile++) {
+    const uint16_t x = (uint16_t)((x_pos + tile) * 8U);
+    const uint8_t *data = tile_data + (size_t)tile * 8U;
+    for (uint8_t row = 0U; row < 8U; row++) {
+      const uint16_t y = (uint16_t)(y_pos * 8U + row);
+      if (x >= panel_width || y >= display->config.height) {
+        break;
+      }
+      uint8_t *dst =
+          display->axs_framebuffer + ((size_t)y * panel_width + x) * 2U;
+      solar_os_vector_expand_1bpp_to_rgb565_be(
+          dst, data, row, display->foreground_rgb565,
+          display->background_rgb565, 8U);
+    }
+  }
+  return ESP_OK;
+}
+
+static esp_err_t axs_flush_framebuffer(tft_ili9341_t *display) {
+  if (display->axs_framebuffer == NULL) {
+    return ESP_ERR_INVALID_STATE;
+  }
+  ESP_RETURN_ON_ERROR(
+      axs_send_case_window(display, 0, (uint16_t)(display->config.width - 1U)),
+      TAG, "axs window failed");
+  const size_t row_bytes = (size_t)display->config.width * 2U;
+  const uint16_t height = display->config.height;
+  for (uint16_t row = 0U; row < height;) {
+    const bool alt = (row & 1U) != 0U;
+    uint8_t *target = alt ? display->line_buffer_alt : display->line_buffer;
+    memcpy(target,
+           &display->axs_framebuffer[(size_t)row * display->config.width * 2U],
+           row_bytes);
+    const esp_err_t err = esp_lcd_panel_io_tx_color(
+        display->panel_io,
+        row == 0U ? AXS_RAMWR_CMD : AXS_RAMWRC_CMD, target, row_bytes);
+    ESP_RETURN_ON_ERROR(err, TAG, "axs framebuffer flush failed");
+    row++;
+  }
+  return ESP_OK;
+}
+
 static esp_err_t ili9341_fill_screen(tft_ili9341_t *display, uint16_t rgb565) {
+  if (display->config.axs15231b) {
+    return axs_fill_screen(display, rgb565);
+  }
   ESP_RETURN_ON_ERROR(
       ili9341_set_window(display, 0, 0, display->config.width - 1,
                          display->config.height - 1),
       TAG, "window failed");
   ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG, "ram write failed");
-  ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
-                      "dc data failed");
 
   ili9341_fill_line(display, rgb565, display->config.width);
-  for (uint16_t row = 0; row < display->config.height; row++) {
-    ESP_RETURN_ON_ERROR(ili9341_tx_bytes(display, display->line_buffer,
-                                         display->config.width * 2U),
-                        TAG, "fill transmit failed");
+  if (display->panel_io) {
+    for (uint16_t row = 0; row < display->config.height; row++) {
+      ESP_RETURN_ON_ERROR(
+          esp_lcd_panel_io_tx_color(display->panel_io, -1,
+                                    display->line_buffer,
+                                    display->config.width * 2U),
+          TAG, "fill panel_io tx_color failed");
+    }
+  } else {
+    ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
+                        "dc data failed");
+    for (uint16_t row = 0; row < display->config.height; row++) {
+      ESP_RETURN_ON_ERROR(ili9341_tx_bytes(display, display->line_buffer,
+                                            display->config.width * 2U),
+                          TAG, "fill transmit failed");
+    }
   }
 
   return ESP_OK;
@@ -368,12 +528,6 @@ static void ili9341_line_from_tile(tft_ili9341_t *display,
       output, tile_data, (unsigned)row,
       display->foreground_rgb565, display->background_rgb565, (size_t)width);
 }
-
-typedef void (*ili9341_line_renderer_t)(tft_ili9341_t *display,
-                                        const void *context,
-                                        uint16_t row,
-                                        uint16_t width,
-                                        uint8_t *output);
 
 static esp_err_t ili9341_transmit_rendered_lines(
     tft_ili9341_t *display, uint16_t width, uint16_t height,
@@ -481,14 +635,27 @@ static esp_err_t ili9341_draw_tile_run(tft_ili9341_t *display,
       ili9341_set_window(display, x, y, x + width - 1, y + height - 1), TAG,
       "tile window failed");
   ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG, "tile ram write failed");
-  ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
-                      "dc data failed");
 
   const ili9341_tile_lines_t lines = {.data = tile_data};
-  ESP_RETURN_ON_ERROR(
-      ili9341_transmit_rendered_lines(
-          display, width, height, ili9341_render_tile_line, &lines),
-      TAG, "tile transmit failed");
+  if (display->panel_io) {
+    /* esp_lcd_panel_io_tx_color sends pixel data with DC=1 */
+    /* For panel_io path, render to a single buffer and send via tx_color */
+    for (uint16_t row = 0; row < height; row++) {
+      ili9341_render_tile_line(display, &lines, row, width, display->line_buffer);
+      const size_t row_bytes = (size_t)width * 2U;
+      ESP_RETURN_ON_ERROR(
+          esp_lcd_panel_io_tx_color(display->panel_io, -1, display->line_buffer,
+                                    row_bytes),
+          TAG, "panel_io tx_color failed");
+    }
+  } else {
+    ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
+                        "dc data failed");
+    ESP_RETURN_ON_ERROR(
+        ili9341_transmit_rendered_lines(
+            display, width, height, ili9341_render_tile_line, &lines),
+        TAG, "tile transmit failed");
+  }
 
   ili9341_shadow_update(display, tile_data, x_pos, y_pos, count);
   return ESP_OK;
@@ -509,6 +676,23 @@ static esp_err_t ili9341_draw_tile(tft_ili9341_t *display,
   uint8_t count = tile->cnt;
   if (tile->x_pos + count > display->tile_width) {
     count = display->tile_width - tile->x_pos;
+  }
+
+  if (display->config.axs15231b) {
+    /* QSPI model: compose the tile into the full-frame buffer. A u8g2
+     * SendBuffer walks every tile row top-to-bottom, so when the final
+     * row's run reaches the right edge the frame is complete and gets
+     * streamed out in one pass. */
+    ESP_RETURN_ON_ERROR(
+        axs_compose_tile(display, tile->tile_ptr, tile->x_pos, tile->y_pos,
+                         count),
+        TAG, "axs tile compose failed");
+    if (tile->y_pos == display->tile_height - 1U &&
+        (uint16_t)(tile->x_pos + count) >= display->tile_width) {
+      ESP_RETURN_ON_ERROR(axs_flush_framebuffer(display), TAG,
+                          "axs framebuffer flush failed");
+    }
+    return ESP_OK;
   }
 
   /* U8g2 submits a complete tile row.  Plan changed runs before opening a
@@ -656,7 +840,8 @@ static uint32_t ili9341_surface_tile_hash(
 
 esp_err_t tft_ili9341_present_surface(
     tft_ili9341_t *display, const solar_os_display_surface_t *surface) {
-  if (display == NULL || display->spi == NULL || surface == NULL ||
+  if (display == NULL || (display->spi == NULL && display->panel_io == NULL) ||
+      surface == NULL ||
       surface->format != SOLAR_OS_DISPLAY_FORMAT_INDEX8 ||
       surface->data == NULL || surface->palette_rgb565 == NULL ||
       surface->palette_size < 256U || surface->dirty_tiles == NULL ||
@@ -695,6 +880,26 @@ esp_err_t tft_ili9341_present_surface(
            surface->presented_hash_count * sizeof(surface->presented_hashes[0]));
     display->indexed_surface_data = surface->data;
     display->indexed_surface_valid = true;
+  }
+
+  if (display->config.axs15231b) {
+    /* QSPI model ignores per-tile dirty tracking: the panel has no
+     * row-address window, so present the full frame as one linear stream. */
+    const ili9341_index8_lines_t lines = {
+        .surface = surface,
+        .x = 0,
+        .y = 0,
+    };
+    ESP_RETURN_ON_ERROR(
+        axs_send_case_window(display, 0,
+                             (uint16_t)(display->config.width - 1U)),
+        TAG, "axs surface window failed");
+    ESP_RETURN_ON_ERROR(
+        axs_stream_rendered_lines(display, display->config.width,
+                                  display->config.height,
+                                  ili9341_render_index8_line, &lines),
+        TAG, "axs surface stream failed");
+    return ESP_OK;
   }
 
   for (uint16_t tile_y = 0; tile_y < tile_rows; tile_y++) {
@@ -743,18 +948,31 @@ esp_err_t tft_ili9341_present_surface(
           "indexed window failed");
       ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG,
                           "indexed ram write failed");
-      ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
-                          "indexed dc data failed");
       const ili9341_index8_lines_t lines = {
           .surface = surface,
           .x = x_start,
           .y = y_start,
       };
-      ESP_RETURN_ON_ERROR(
-          ili9341_transmit_rendered_lines(
-              display, width, (uint16_t)(y_end - y_start + 1U),
-              ili9341_render_index8_line, &lines),
-          TAG, "indexed transmit failed");
+      if (display->panel_io) {
+        const uint16_t idx_height = (uint16_t)(y_end - y_start + 1U);
+        for (uint16_t row = 0; row < idx_height; row++) {
+          ili9341_render_index8_line(display, &lines, row, width,
+                                     display->line_buffer);
+          ESP_RETURN_ON_ERROR(
+              esp_lcd_panel_io_tx_color(display->panel_io, -1,
+                                        display->line_buffer,
+                                        (size_t)width * 2U),
+              TAG, "indexed panel_io tx_color failed");
+        }
+      } else {
+        ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
+                            "indexed dc data failed");
+        ESP_RETURN_ON_ERROR(
+            ili9341_transmit_rendered_lines(
+                display, width, (uint16_t)(y_end - y_start + 1U),
+                ili9341_render_index8_line, &lines),
+            TAG, "indexed transmit failed");
+      }
       for (uint16_t updated = first_tile; updated < tile_x; updated++) {
         const size_t hash_index =
             (size_t)tile_y * surface->hash_stride + updated;
@@ -926,7 +1144,8 @@ static void ili9341_render_frame_line(tft_ili9341_t *display,
 
 esp_err_t tft_ili9341_present_frame(
     tft_ili9341_t *display, const solar_os_display_raster_t *frame) {
-  if (display == NULL || display->spi == NULL || frame == NULL ||
+  if (display == NULL || (display->spi == NULL && display->panel_io == NULL) ||
+      frame == NULL ||
       frame->format != SOLAR_OS_DISPLAY_FORMAT_INDEX2 || frame->data == NULL ||
       frame->palette_rgb565 == NULL || frame->palette_size < 4U ||
       frame->source_width == 0 || frame->source_height == 0 ||
@@ -990,6 +1209,27 @@ esp_err_t tft_ili9341_present_frame(
       .frame_width = native_line_width,
       .native_height = native_height,
   };
+  if (display->config.axs15231b) {
+    if (native_x0 != 0U || native_y0 != 0U ||
+        native_line_width != display->config.width ||
+        native_height != display->config.height) {
+      /* Partial frames would need a GRAM row window the QSPI write
+       * protocol does not offer; stream full frames only. */
+      return ESP_ERR_NOT_SUPPORTED;
+    }
+    ESP_RETURN_ON_ERROR(
+        axs_send_case_window(display, 0,
+                             (uint16_t)(display->config.width - 1U)),
+        TAG, "axs frame window failed");
+    ESP_RETURN_ON_ERROR(
+        axs_stream_rendered_lines(display, display->config.width,
+                                  display->config.height,
+                                  ili9341_render_frame_line, &lines),
+        TAG, "axs frame stream failed");
+    ili9341_invalidate_shadow(display);
+    display->indexed_surface_valid = false;
+    return ESP_OK;
+  }
   const uint16_t present_x0 = frame->clear_background ? 0U : native_x0;
   const uint16_t present_y0 = frame->clear_background ? 0U : native_y0;
   const uint16_t present_x1 = frame->clear_background ?
@@ -1006,14 +1246,26 @@ esp_err_t tft_ili9341_present_frame(
       TAG, "frame window failed");
   ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG,
                       "frame ram write failed");
-  ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
-                      "frame dc data failed");
-  ESP_RETURN_ON_ERROR(
-      ili9341_transmit_rendered_lines(
-          display, present_width,
-          present_height,
-          ili9341_render_frame_line, &lines),
-      TAG, "frame transmit failed");
+  if (display->panel_io) {
+    for (uint16_t row = 0; row < present_height; row++) {
+      ili9341_render_frame_line(display, &lines, row, present_width,
+                                display->line_buffer);
+      ESP_RETURN_ON_ERROR(
+          esp_lcd_panel_io_tx_color(display->panel_io, -1,
+                                    display->line_buffer,
+                                    (size_t)present_width * 2U),
+          TAG, "frame panel_io tx_color failed");
+    }
+  } else {
+    ESP_RETURN_ON_ERROR(gpio_set_level(display->config.dc_pin, 1), TAG,
+                        "frame dc data failed");
+    ESP_RETURN_ON_ERROR(
+        ili9341_transmit_rendered_lines(
+            display, present_width,
+            present_height,
+            ili9341_render_frame_line, &lines),
+        TAG, "frame transmit failed");
+  }
 
   ili9341_invalidate_shadow(display);
   display->indexed_surface_valid = false;
@@ -1021,12 +1273,45 @@ esp_err_t tft_ili9341_present_frame(
 }
 
 static esp_err_t ili9341_full_init(tft_ili9341_t *display) {
+  ESP_LOGI(TAG, "full_init: st7789=%d pre_inited=%d spi=%p panel_io=%p",
+           display->config.st7789, display->config.panel_pre_inited,
+           (void*)display->spi, (void*)display->panel_io);
   ili9341_hardware_reset(display);
 
+  if (display->config.panel_pre_inited) {
+    /* Panel was already initialized by esp_lcd; just fill and turn on. */
+    SOLAR_OS_LOGI(TAG, "panel pre-initialized, skipping init sequence");
+    ESP_RETURN_ON_ERROR(ili9341_fill_screen(display, display->background_rgb565),
+                        TAG, "screen clear failed");
+    if (!ili9341_checked_cmd(display, 0x29)) {
+      return display->last_error;
+    }
+    if (display->config.invert_colors && !ili9341_checked_cmd(display, 0x21)) {
+      return display->last_error;
+    }
+    vTaskDelay(pdMS_TO_TICKS(20));
+    ili9341_set_backlight_power(display, true);
+    ili9341_invalidate_shadow(display);
+    display->last_error = ESP_OK;
+    return ESP_OK;
+  }
+
+  /* Without a hardware RST pin the panel may be in an indeterminate
+   * state after a chip reset (the panel keeps its internal state
+   * because power is not cut).  Give it extra time to settle before
+   * any SPI command. */
+  if (!gpio_valid(display->config.reset_pin)) {
+    SOLAR_OS_LOGI(TAG, "no RST pin, pre-settle 200ms");
+    vTaskDelay(pdMS_TO_TICKS(200));
+  }
+
+  SOLAR_OS_LOGI(TAG, "SWRESET (0x01)");
+  ESP_LOGI(TAG, "SWRESET cmd via %s", display->panel_io ? "panel_io" : "spi");
   if (!ili9341_checked_cmd(display, 0x01)) {
+    SOLAR_OS_LOGE(TAG, "SWRESET failed: %s", esp_err_to_name(display->last_error));
     return display->last_error;
   }
-  vTaskDelay(pdMS_TO_TICKS(120));
+  vTaskDelay(pdMS_TO_TICKS(20));
 
   if (display->config.st7789) {
     const uint8_t madctl[] = {display->config.madctl};
@@ -1048,10 +1333,13 @@ static esp_err_t ili9341_full_init(tft_ili9341_t *display) {
         0x47, 0x0e, 0x1c, 0x17, 0x1b, 0x1e,
     };
 
-    if (!ili9341_checked_cmd(display, 0x11)) {
+  SOLAR_OS_LOGI(TAG, "SLPOUT (0x11)");
+  if (!ili9341_checked_cmd(display, 0x11)) {
+      SOLAR_OS_LOGE(TAG, "SLPOUT failed: %s", esp_err_to_name(display->last_error));
       return display->last_error;
     }
-    vTaskDelay(pdMS_TO_TICKS(120));
+    vTaskDelay(pdMS_TO_TICKS(100));
+    SOLAR_OS_LOGI(TAG, "register config (MADCTL etc)");
     if (!ili9341_checked_cmd_data(display, 0x36, madctl, sizeof(madctl)) ||
         !ili9341_checked_cmd_data(display, 0x3a, colmod, sizeof(colmod)) ||
         !ili9341_checked_cmd_data(display, 0xb2, porctrl, sizeof(porctrl)) ||
@@ -1167,9 +1455,14 @@ static esp_err_t ili9341_full_init(tft_ili9341_t *display) {
     vTaskDelay(pdMS_TO_TICKS(120));
   }
 
+  SOLAR_OS_LOGI(TAG, "fill screen");
+  ESP_LOGI(TAG, "fill_screen start");
   ESP_RETURN_ON_ERROR(ili9341_fill_screen(display, display->background_rgb565),
                       TAG, "screen clear failed");
+  ESP_LOGI(TAG, "fill_screen done");
 
+  SOLAR_OS_LOGI(TAG, "DISPON (0x29)");
+  ESP_LOGI(TAG, "DISPON");
   if (!ili9341_checked_cmd(display, 0x29)) {
     return display->last_error;
   }
@@ -1235,10 +1528,16 @@ static uint8_t ili9341_u8x8_display_cb(u8x8_t *u8x8, uint8_t message,
 
 esp_err_t tft_ili9341_init(tft_ili9341_t *display,
                            const tft_ili9341_config_t *config) {
-  if (display == NULL || config == NULL || config->spi_bus == NULL ||
-      config->spi_bus[0] == '\0' ||
-      !gpio_valid(config->dc_pin) || config->width == 0 ||
+  if (display == NULL || config == NULL || config->width == 0 ||
       config->height == 0 || config->width > 480 || config->height > 480) {
+    return ESP_ERR_INVALID_ARG;
+  }
+  if (config->axs15231b) {
+    if (config->panel_io_handle == NULL) {
+      return ESP_ERR_INVALID_ARG;
+    }
+  } else if (config->spi_bus == NULL || config->spi_bus[0] == '\0' ||
+             !gpio_valid(config->dc_pin)) {
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -1271,18 +1570,22 @@ esp_err_t tft_ili9341_init(tft_ili9341_t *display,
                       "control pin config failed");
   ili9341_set_backlight_power(display, false);
 
-  const spi_device_interface_config_t device_config = {
-      .clock_speed_hz = (int)display->config.spi_clock_hz,
-      .mode = display->config.spi_mode,
-      .spics_io_num = gpio_valid(display->config.cs_pin) ?
-          display->config.cs_pin : GPIO_NUM_NC,
-      .queue_size = 2,
-      .flags = SPI_DEVICE_HALFDUPLEX,
-  };
-  ESP_RETURN_ON_ERROR(
-      solar_os_bus_spi_add_device(display->config.spi_bus, &device_config,
-                                  &display->spi),
-      TAG, "spi add device failed");
+  display->panel_io = (esp_lcd_panel_io_handle_t)config->panel_io_handle;
+
+  if (display->panel_io == NULL) {
+    const spi_device_interface_config_t device_config = {
+        .clock_speed_hz = (int)display->config.spi_clock_hz,
+        .mode = display->config.spi_mode,
+        .spics_io_num = gpio_valid(display->config.cs_pin) ?
+            display->config.cs_pin : GPIO_NUM_NC,
+        .queue_size = 2,
+        .flags = SPI_DEVICE_HALFDUPLEX,
+    };
+    ESP_RETURN_ON_ERROR(
+        solar_os_bus_spi_add_device(display->config.spi_bus, &device_config,
+                                    &display->spi),
+        TAG, "spi add device failed");
+  }
 
   display->line_buffer_size =
       display->config.width * 2U * ILI9341_DMA_LINES;
@@ -1297,6 +1600,21 @@ esp_err_t tft_ili9341_init(tft_ili9341_t *display,
     return ESP_ERR_NO_MEM;
   }
 
+  if (display->config.axs15231b) {
+    /* Full-frame RGB565 composition buffer for u8g2 tiles (QSPI panels
+     * cannot do row-windowed partial updates). */
+    display->axs_framebuffer =
+        heap_caps_malloc((size_t)display->config.width *
+                             display->config.height * 2U,
+                         MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (display->axs_framebuffer == NULL) {
+      tft_ili9341_deinit(display);
+      return ESP_ERR_NO_MEM;
+    }
+    memset(display->axs_framebuffer, 0,
+           (size_t)display->config.width * display->config.height * 2U);
+  }
+
   display->buffer_size = display->buffer_row_bytes * display->tile_height;
   /* Driver framebuffer only requires byte-addressable memory. */
   display->buffer = heap_caps_malloc(display->buffer_size, MALLOC_CAP_8BIT);
@@ -1307,17 +1625,22 @@ esp_err_t tft_ili9341_init(tft_ili9341_t *display,
   memset(display->buffer, 0, display->buffer_size);
 
   display->shadow_size = display->buffer_size;
-  /* Full-frame shadow is large and never used as a DMA source. */
-  display->shadow = heap_caps_malloc(display->shadow_size,
-                                     MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (display->shadow == NULL) {
-    ESP_LOGW(
-        TAG,
-        "display shadow allocation failed, partial update skipping disabled");
-    display->shadow_size = 0;
+  if (!display->config.axs15231b) {
+    /* Full-frame shadow is large and never used as a DMA source. The AXS
+     * path streams every frame and never consults the shadow. */
+    display->shadow = heap_caps_malloc(display->shadow_size,
+                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (display->shadow == NULL) {
+      ESP_LOGW(
+          TAG,
+          "display shadow allocation failed, partial update skipping disabled");
+      display->shadow_size = 0;
+    } else {
+      memset(display->shadow, 0, display->shadow_size);
+      ili9341_invalidate_shadow(display);
+    }
   } else {
-    memset(display->shadow, 0, display->shadow_size);
-    ili9341_invalidate_shadow(display);
+    display->shadow_size = 0;
   }
 
   active_display = display;
@@ -1332,7 +1655,8 @@ esp_err_t tft_ili9341_init(tft_ili9341_t *display,
 }
 
 esp_err_t tft_ili9341_resume(tft_ili9341_t *display) {
-  if (display == NULL || display->spi == NULL || display->buffer == NULL ||
+  if (display == NULL || (display->spi == NULL && display->panel_io == NULL) ||
+      display->buffer == NULL ||
       display->line_buffer == NULL || display->line_buffer_alt == NULL) {
     return ESP_ERR_INVALID_STATE;
   }
@@ -1396,6 +1720,10 @@ void tft_ili9341_deinit(tft_ili9341_t *display) {
   if (display->shadow != NULL) {
     heap_caps_free(display->shadow);
     display->shadow = NULL;
+  }
+  if (display->axs_framebuffer != NULL) {
+    heap_caps_free(display->axs_framebuffer);
+    display->axs_framebuffer = NULL;
   }
   if (display->frame_scratch != NULL) {
     heap_caps_free(display->frame_scratch);

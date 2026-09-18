@@ -4,9 +4,15 @@
 
 #include "esp_check.h"
 #include "esp_heap_caps.h"
+#include "esp_log.h"
+#include "driver/gpio.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_ops.h"
+#include "esp_lcd_panel_st7789.h"
 #include "solar_os_board_display.h"
 #include "solar_os_buses.h"
 #include "solar_os_display.h"
+#include "solar_os_log.h"
 #include "tft_ili9341.h"
 
 #ifndef SOLAR_OS_BOARD_DISPLAY_SPI_CLOCK_HZ
@@ -263,10 +269,10 @@ static esp_err_t attach_tft(const char *name,
             SOLAR_OS_BOARD_PCA9557_I2C_BUS,
             SOLAR_OS_BUS_PROTOCOL_I2C, "tft_pca9557");
         if (pca_err == ESP_OK) {
-            /* bit0=LCD_CS (active low, hold selected), bit1=PA_EN off,
+            /* bit0=LCD_CS (active low, hold selected), bit1=PA_EN on,
              * bit2=DVP_PWDN off. LCD CS lives on the PCA9557, so the SPI
              * driver has no GPIO to assert it; hold it low permanently. */
-            const uint8_t pca9557_init_data[] = {0x04};
+            const uint8_t pca9557_init_data[] = {0x06};
             solar_os_bus_i2c_write_reg(SOLAR_OS_BOARD_PCA9557_I2C_BUS,
                                        SOLAR_OS_BOARD_PCA9557_I2C_ADDR,
                                        0x01, pca9557_init_data, 1);
@@ -285,6 +291,54 @@ static esp_err_t attach_tft(const char *name,
         return ESP_ERR_NO_MEM;
     }
     strlcpy(device->spi_bus, spi_bus, sizeof(device->spi_bus));
+
+    bool panel_pre_inited = false;
+    esp_lcd_panel_io_handle_t io_handle = NULL;
+#if defined(SOLAR_OS_BOARD_SPI_HOST)
+    if (st7789 && reset < 0) {
+        esp_lcd_panel_handle_t panel_handle = NULL;
+
+        const esp_lcd_panel_io_spi_config_t io_config = {
+            .dc_gpio_num = dc,
+            .cs_gpio_num = GPIO_NUM_NC,
+            .pclk_hz = SOLAR_OS_BOARD_DISPLAY_SPI_CLOCK_HZ,
+            .lcd_cmd_bits = 8,
+            .lcd_param_bits = 8,
+            .spi_mode = SOLAR_OS_BOARD_DISPLAY_SPI_MODE,
+            .trans_queue_depth = 10,
+        };
+        const esp_err_t io_err = esp_lcd_new_panel_io_spi(
+            (esp_lcd_spi_bus_handle_t)SOLAR_OS_BOARD_SPI_HOST,
+            &io_config, &io_handle);
+        ESP_LOGI("tft_disp", "esp_lcd io_spi: %s io_handle=%p", esp_err_to_name(io_err), io_handle);
+        if (io_err == ESP_OK) {
+            const esp_lcd_panel_dev_config_t panel_config = {
+                .reset_gpio_num = GPIO_NUM_NC,
+                .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
+                .bits_per_pixel = 16,
+            };
+            const esp_err_t panel_err = esp_lcd_new_panel_st7789(
+                io_handle, &panel_config, &panel_handle);
+            ESP_LOGI("tft_disp", "esp_lcd st7789: %s", esp_err_to_name(panel_err));
+            if (panel_err == ESP_OK) {
+                esp_lcd_panel_reset(panel_handle);
+                esp_lcd_panel_init(panel_handle);
+                esp_lcd_panel_invert_color(panel_handle, true);
+                esp_lcd_panel_disp_on_off(panel_handle, true);
+                panel_pre_inited = true;
+                SOLAR_OS_LOGI("tft", "esp_lcd panel initialized");
+            } else {
+                SOLAR_OS_LOGE("tft", "esp_lcd_new_panel_st7789 failed: %s",
+                              esp_err_to_name(panel_err));
+            }
+            if (panel_handle) esp_lcd_panel_del(panel_handle);
+        } else {
+            SOLAR_OS_LOGE("tft", "esp_lcd_new_panel_io_spi failed: %s",
+                          esp_err_to_name(io_err));
+        }
+    }
+#endif
+
     const tft_ili9341_config_t config = {
         .spi_bus = device->spi_bus,
         .cs_pin = cs,
@@ -313,6 +367,8 @@ static esp_err_t attach_tft(const char *name,
         .invert_colors = SOLAR_OS_BOARD_DISPLAY_INVERT_COLORS,
         .backlight_active_high = active_high,
         .backlight_pwm = pwm,
+        .panel_pre_inited = panel_pre_inited,
+        .panel_io_handle = panel_pre_inited ? io_handle : NULL,
         .backlight_pulse_steps = SOLAR_OS_BOARD_LCD_BACKLIGHT_PULSE_STEPS,
         .backlight_step_percent = SOLAR_OS_BOARD_LCD_BACKLIGHT_STEP_PERCENT,
 #ifdef SOLAR_OS_BOARD_DISPLAY_U8G2_ROTATION
@@ -322,6 +378,8 @@ static esp_err_t attach_tft(const char *name,
 #endif
     };
     esp_err_t ret = tft_ili9341_init(&device->driver, &config);
+    ESP_LOGI("tft_disp", "init: %s panel_io=%p spi=%p",
+             esp_err_to_name(ret), device->driver.panel_io, device->driver.spi);
     if (ret != ESP_OK) {
         heap_caps_free(device);
         device = NULL;

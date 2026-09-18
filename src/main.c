@@ -51,6 +51,9 @@
 #if SOLAR_OS_BOARD_HAS_POINTER
 #include "solar_os_ft6336.h"
 #endif
+#if SOLAR_OS_PACKAGE_DRIVER_AXS15231B_TOUCH
+#include "solar_os_axs15231b_touch.h"
+#endif
 #include "solar_os_radio.h"
 #include "solar_os_rtc.h"
 #include "solar_os_schedule.h"
@@ -885,6 +888,13 @@ static void enter_light_sleep(const char *reason)
     }
     (void)solar_os_power_end_explicit_sleep();
 
+    /* If we woke from light sleep while suspended, exit suspend too. */
+    solar_os_power_status_t post_sleep_status;
+    solar_os_power_get_status(&post_sleep_status);
+    if (post_sleep_status.suspend_active) {
+        exit_suspend("KEY wake from light sleep");
+    }
+
     update_status();
     resume_display_after_sleep(now_ms);
 }
@@ -1292,7 +1302,12 @@ static void poll_local_input_sources(void)
 {
 #if SOLAR_OS_BOARD_HAS_POINTER
     if (board_has(SOLAR_OS_BOARD_CAP_POINTER)) {
+#if SOLAR_OS_PACKAGE_DRIVER_FT6336
         solar_os_ft6336_poll();
+#endif
+#if SOLAR_OS_PACKAGE_DRIVER_AXS15231B_TOUCH
+        solar_os_axs15231b_touch_poll();
+#endif
     }
 #endif
 #if SOLAR_OS_PACKAGE_SERVICE_BUTTONS
@@ -1526,6 +1541,15 @@ static void maybe_enter_idle_sleep(void)
         !solar_os_sessions_foreground_is_shell() ||
         key_pressed ||
         key_ignore_until_released) {
+        return;
+    }
+
+    /* Don't enter light sleep while suspended — the key press that
+     * wakes from light sleep is consumed by the wake handler and
+     * would never reach handle_key_short_press() to exit suspend. */
+    solar_os_power_status_t power_status;
+    solar_os_power_get_status(&power_status);
+    if (power_status.suspend_active) {
         return;
     }
 

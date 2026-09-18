@@ -2361,11 +2361,21 @@ static esp_err_t audio_loopback_locked(uint32_t duration_ms, uint8_t volume)
     }
 
     const int64_t deadline_us = esp_timer_get_time() + ((int64_t)duration_ms * 1000);
+    uint32_t reads = 0U;
+    uint32_t last_nonzero = 0U;
     while (esp_timer_get_time() < deadline_us) {
         ret = solar_os_board_audio_read(buffer, AUDIO_LOOPBACK_BUFFER_BYTES);
         if (ret != ESP_OK) {
             break;
         }
+        reads++;
+        uint32_t nonzero = 0U;
+        for (size_t i = 0U; i < AUDIO_LOOPBACK_BUFFER_BYTES; i++) {
+            if (buffer[i] != 0U) {
+                nonzero++;
+            }
+        }
+        last_nonzero = nonzero;
         ret = solar_os_board_audio_write(buffer, AUDIO_LOOPBACK_BUFFER_BYTES);
         if (ret != ESP_OK) {
             break;
@@ -2373,10 +2383,15 @@ static esp_err_t audio_loopback_locked(uint32_t duration_ms, uint8_t volume)
     }
 
     solar_os_memory_free(buffer);
-    SOLAR_OS_LOGI(TAG, "loopback: %" PRIu32 " ms vol=%u ret=%s",
-             duration_ms,
-             volume,
-             esp_err_to_name(ret));
+    SOLAR_OS_LOGI(TAG,
+                  "loopback: %" PRIu32 " ms vol=%u ret=%s reads=%" PRIu32
+                  " last_nonzero=%" PRIu32 "/%" PRIu32,
+                  duration_ms,
+                  volume,
+                  esp_err_to_name(ret),
+                  reads,
+                  last_nonzero,
+                  (uint32_t)AUDIO_LOOPBACK_BUFFER_BYTES);
     return ret;
 #endif
 }

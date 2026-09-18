@@ -132,7 +132,7 @@ bindings = { i2c = "i2c0", addr = 0x38, rotation = 1 }
 [[devices]]
 driver = "es8311-es7210"
 name = "audio0"
-bindings = { i2c = "i2c0", i2s = 0, mclk = 38, bck = 14, ws = 13, din = 12, dout = 45 }
+bindings = { i2c = "i2c0", i2s = 0, mclk = 38, bck = 14, ws = 13, din = 12, dout = 45, addr = 0x41 }
 
 [[devices]]
 driver = "sdmmc"

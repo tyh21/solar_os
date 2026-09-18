@@ -6,6 +6,7 @@
 
 #include "driver/spi_master.h"
 #include "esp_err.h"
+#include "esp_lcd_panel_io.h"
 #include "solar_os_display_surface.h"
 #include "u8g2.h"
 
@@ -28,10 +29,15 @@ typedef struct {
     uint8_t madctl;
     bool st7796;
     bool st7789;
+    /* AXS15231B QSPI panel: panel_io must be provided; commands travel as
+     * 32-bit opcode frames and pixel data streams full-frame in quad mode. */
+    bool axs15231b;
     uint8_t spi_mode;
     bool invert_colors;
     bool backlight_active_high;
     bool backlight_pwm;
+    bool panel_pre_inited; /* esp_lcd already initialized the panel; skip init sequence */
+    void *panel_io_handle; /* esp_lcd_panel_io_handle_t if panel_pre_inited */
     /* >0 selects a single-wire pulse dimmer (AW9364 class) with this many
      * brightness steps instead of plain on/off or PWM on backlight_pin. */
     uint8_t backlight_pulse_steps;
@@ -43,6 +49,7 @@ typedef struct {
 
 typedef struct {
     spi_device_handle_t spi;
+    esp_lcd_panel_io_handle_t panel_io; /* non-NULL: use esp_lcd IO for all traffic */
     u8g2_t u8g2;
     uint8_t *buffer;
     uint8_t *shadow;
@@ -67,6 +74,9 @@ typedef struct {
     uint16_t tile_width;
     uint16_t tile_height;
     size_t buffer_row_bytes;
+    /* AXS mode: RGB565 (big-endian byte stream) full-frame buffer (PSRAM)
+     * for u8g2 tile composition. */
+    uint8_t *axs_framebuffer;
 } tft_ili9341_t;
 
 esp_err_t tft_ili9341_init(tft_ili9341_t *display,

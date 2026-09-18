@@ -537,6 +537,88 @@ kind = "gpio"
 hint = "gpio"
 required = true
 
+[drivers.axs15231b]
+summary = "320x480 QSPI color TFT"
+package = "driver_display_axs15231b"
+targets = ["esp32s3"]
+capabilities = ["gpio", "pwm"]
+board_capabilities = ["display", "gfx", "display_brightness", "streaming_display"]
+board_driver = "display_axs15231b"
+early = true
+default_name = "display0"
+[[drivers.axs15231b.bindings]]
+key = "cs"
+kind = "gpio"
+hint = "gpio"
+required = true
+[[drivers.axs15231b.bindings]]
+key = "bl"
+kind = "gpio"
+hint = "gpio"
+[[drivers.axs15231b.bindings]]
+key = "active"
+kind = "parameter"
+hint = "0|1"
+allowed = [0, 1]
+[[drivers.axs15231b.bindings]]
+key = "pwm"
+kind = "parameter"
+hint = "0|1"
+allowed = [0, 1]
+
+[drivers.axs15231b-touch]
+summary = "capacitive touch"
+package = "driver_axs15231b_touch"
+targets = ["esp32s3"]
+capabilities = ["i2c", "gfx"]
+board_capabilities = ["pointer"]
+board_driver = "pointer_axs15231b"
+early = true
+default_name = "touch0"
+[[drivers.axs15231b-touch.bindings]]
+key = "i2c"
+kind = "i2c_bus"
+hint = "bus"
+required = true
+[[drivers.axs15231b-touch.bindings]]
+key = "addr"
+kind = "i2c_address"
+hint = "0x3b"
+required = true
+allowed = [0x3B]
+[[drivers.axs15231b-touch.bindings]]
+key = "rotation"
+kind = "parameter"
+hint = "0..3"
+required = true
+min = 0
+max = 3
+
+[drivers.wave35b-core]
+summary = "Waveshare 3.5B power sequencer"
+package = "board_wave35b_core"
+targets = ["esp32s3"]
+capabilities = ["i2c"]
+early = true
+default_name = "core0"
+[[drivers.wave35b-core.bindings]]
+key = "i2c"
+kind = "i2c_bus"
+hint = "bus"
+required = true
+[[drivers.wave35b-core.bindings]]
+key = "pmic"
+kind = "i2c_address"
+hint = "0x34"
+required = true
+allowed = [0x34]
+[[drivers.wave35b-core.bindings]]
+key = "expander"
+kind = "i2c_address"
+hint = "0x20"
+required = true
+allowed = [0x20]
+
 [drivers.ft6336]
 summary = "capacitive touch"
 package = "driver_ft6336"
@@ -771,6 +853,11 @@ required = true
 key = "pa"
 kind = "gpio"
 hint = "gpio"
+required = false
+[[drivers.es8311-es7210.bindings]]
+key = "addr"
+kind = "i2c_address"
+hint = "input codec 7-bit address"
 required = false
 
 [drivers.es8311-duplex]

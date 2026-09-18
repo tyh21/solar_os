@@ -1,0 +1,5 @@
+set(SOLAR_OS_BOARD_DISPLAY_DRIVER "axs15231b")
+include("${CMAKE_CURRENT_LIST_DIR}/gpio_esp_idf.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/pwm_esp_idf.cmake")
+list(APPEND SOLAR_OS_BOARD_REQUIRES esp_lcd)
+list(APPEND SOLAR_OS_BOARD_REQUIRED_PACKAGES driver_display_axs15231b)

@@ -1,7 +1,28 @@
+---
+AIGC:
+  ContentProducer: '001191110102MAD55U9H0F10002'
+  ContentPropagator: '001191110102MAD55U9H0F10002'
+  Label: '1'
+  ProduceID: '1de29552-6ec1-4bbf-a605-d3f75e3fc298'
+  PropagateID: '1de29552-6ec1-4bbf-a605-d3f75e3fc298'
+  ReservedCode1: '98253039-fced-44c4-82a6-a5c8e1d65214'
+  ReservedCode2: '98253039-fced-44c4-82a6-a5c8e1d65214'
+---
+
 # SolarOS Changelog
 
 ## 4.x
 
+- **4.12.0** — 2026-09-18 — Added the Waveshare ESP32-S3-Touch-LCD-3.5B
+  target with its 320x480 AXS15231B quad-SPI color display, built-in
+  resistive-free touch controller, AXP2101 power management, and TCA9554
+  expander-backed panel reset. The AXS15231B driver streams whole frames
+  through a PSRAM framebuffer because the panel exposes no row window, and
+  the touch driver speaks the controller's custom 11-byte-header I2C
+  protocol in polled mode. A new `wave35b-core` early driver applies the
+  verified TCA9554 reset pulse followed by the DC1-only AXP2101 rail
+  sequence with 25 kHz PWM backlight. `uart_port` now supports TX-only
+  boards whose only free pin pair lacks an RX line.
 - **4.11.0** — 2026-09-12 — Replaced the Bluedroid BLE backend with
   NimBLE, reducing internal RAM use while retaining BLE keyboard pairing,
   reconnect, and sleep/wake support. Python and Lua applications can now
@@ -904,3 +925,5 @@
 - **1.2.0** — 2026-06-21 — Added the memory service and integrated it with the shell, Python runtime, and SLIP job. (`d779a790`)
 - **1.1.0** — 2026-06-21 — Added the SLIP background job. (`cdb85cb6`)
 - **1.0.0** — 2026-06-21 — Established the initial SolarOS firmware, services, shell, apps, jobs, MicroPython runtime, and Waveshare ESP32-S3 RLCD board support. (`7ab94ab9`)
+
+> AI生成

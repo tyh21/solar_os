@@ -21,7 +21,9 @@ esp_err_t uart_port_init(const uart_port_config_t *config)
 {
     if (config == NULL || !valid_port(config->port_num) ||
         !GPIO_IS_VALID_OUTPUT_GPIO(config->tx_pin) ||
-        !GPIO_IS_VALID_GPIO(config->rx_pin) ||
+        /* GPIO_NUM_NC means TX-only (no console input); anything else must
+         * be a real input-capable GPIO. */
+        (config->rx_pin != GPIO_NUM_NC && !GPIO_IS_VALID_GPIO(config->rx_pin)) ||
         config->tx_pin == config->rx_pin || config->baud_rate == 0 ||
         config->rx_buffer_size == 0 || config->tx_buffer_size == 0) {
         return ESP_ERR_INVALID_ARG;
@@ -91,7 +93,9 @@ esp_err_t uart_port_deinit(uart_port_t port_num)
     ready[port_num] = false;
     active_configs[port_num] = (uart_port_config_t) {0};
     (void)gpio_reset_pin(config.tx_pin);
-    (void)gpio_reset_pin(config.rx_pin);
+    if (config.rx_pin != GPIO_NUM_NC) {
+        (void)gpio_reset_pin(config.rx_pin);
+    }
     return ESP_OK;
 }
 
