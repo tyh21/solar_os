@@ -650,6 +650,10 @@ static bool wait_key_rtc_released_stable(uint32_t stable_ms, uint32_t timeout_ms
 
 static void enter_light_sleep(const char *reason)
 {
+#if SOLAR_OS_BOARD_DISABLE_LIGHT_SLEEP
+    SOLAR_OS_LOGW(TAG, "%s: light sleep disabled for this board", reason);
+    return;
+#else
     if (!board_has(SOLAR_OS_BOARD_CAP_KEY)) {
         SOLAR_OS_LOGW(TAG, "%s: light sleep needs a KEY wake source", reason);
         return;
@@ -897,6 +901,7 @@ static void enter_light_sleep(const char *reason)
 
     update_status();
     resume_display_after_sleep(now_ms);
+#endif /* SOLAR_OS_BOARD_DISABLE_LIGHT_SLEEP */
 }
 
 static void maybe_enter_deferred_sleep(void)

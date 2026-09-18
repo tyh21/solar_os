@@ -159,6 +159,9 @@ typedef uint64_t solar_os_board_capability_t;
 #ifndef SOLAR_OS_BOARD_HAS_STREAMING_DISPLAY
 #define SOLAR_OS_BOARD_HAS_STREAMING_DISPLAY 0
 #endif
+#ifndef SOLAR_OS_BOARD_DISABLE_LIGHT_SLEEP
+#define SOLAR_OS_BOARD_DISABLE_LIGHT_SLEEP 0
+#endif
 
 solar_os_board_capabilities_t solar_os_board_capabilities(void);
 bool solar_os_board_has(solar_os_board_capability_t capability);

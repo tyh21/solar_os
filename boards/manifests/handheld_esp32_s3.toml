@@ -28,7 +28,7 @@ capabilities = [
   "streaming_display",
   "psram", "simd", "display", "gfx", "display_brightness", "pointer",
   "cdc", "uart", "sd", "i2c", "spi", "audio",
-  "audio_input", "wifi", "ble", "gpio", "adc", "pwm",
+  "audio_input", "wifi", "ble", "gpio", "adc", "pwm", "key",
   "expansion_gpio", "expansion_i2c", "expansion_spi", "expansion_uart",
   "expansion_adc", "expansion_pwm", "expansion_i2s",
 ]
@@ -82,6 +82,7 @@ SOLAR_OS_BOARD_PIN_KEY = "GPIO_NUM_0"
 SOLAR_OS_BOARD_KEY_ACTIVE_LEVEL = "0"
 SOLAR_OS_BOARD_KEY_PULL_UP = "1"
 SOLAR_OS_BOARD_KEY_PULL_DOWN = "0"
+SOLAR_OS_BOARD_DISABLE_LIGHT_SLEEP = "1"
 SOLAR_OS_BOARD_UART_PORT = "UART_NUM_0"
 SOLAR_OS_BOARD_PIN_UART_TX = "GPIO_NUM_43"
 SOLAR_OS_BOARD_PIN_UART_RX = "GPIO_NUM_44"
@@ -99,7 +100,7 @@ host = "SPI3_HOST"
 sclk = 41
 mosi = 40
 cs = []
-max_transfer_size = 4096
+max_transfer_size = 153600
 
 [[buses]]
 name = "i2c0"

@@ -1,0 +1,2736 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037bd0a
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (25) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (31) boot.esp32s3: Boot SPI Speed : 80MHz
+I (35) boot.esp32s3: SPI Mode       : DIO
+I (39) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (47) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (56) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (69) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (79) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (97) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (99) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (122) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (124) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (158) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (169) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (177) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (192) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (203) efuse_init: Chip rev:         v0.2
+I (207) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (229) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (238) spi_flash: flash io: dio
+W (241) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init: At 3FC975B0 len 00052160 (328 KiB): RAM
+I (218) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM
+I (223) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM
+I (228) heap_init: At 600FE000 len 00001FE8 (7 KiB): RTCRAM
+I (235) spi_flash: detected chip: generic
+I (237) spi_flash: flash io: dio
+W (240) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (253) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (259) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (266) main_task: Started on CPU0
+I (266) main_task: Calling app_main()
+I (276) st7789_test: PCA9557 initialized: output=0x03 config=0xf8
+I (276) st7789_test: SPI bus initialized
+I (286) st7789_test: Panel IO created
+I (286) st7789_test: Panel ST7789 created
+I (306) st7789_test: LCD CS pulled low (SelectDisplay)
+I (406) st7789_test: Panel initialized, display ON
+I (406) st7789_test: Backlight ON (50%)
+Guru Meditation Error: Core  0 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4200ba86  PS      : 0x00060a30  A0      : 0x820078e2  A1      : 0x3fc99f20  
+A2      : 0x00000003  A3      : 0x3c0245f0  A4      : 0x3c024664  A5      : 0x0000010a  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0xfffff800  A11     : 0x00000000  A12     : 0x3c026590  A13     : 0x00000196  
+A14     : 0x3c026284  A15     : 0x00000404  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x400570e8  LEND    : 0x400570f3  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4200ba83:0x3fc99f20 0x420078df:0x3fc9a040 0x42019f6a:0x3fc9a070
+
+
+
+
+ELF file SHA256: 7e88a70af
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4037dc29
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x14f0
+load:0x403c8700,len:0xde4
+load:0x403cb700,len:0x2f58
+entry 0x403c8904
+I (24) boot: ESP-IDF v6.1 2nd stage bootloader
+I (24) boot: compile time Sep 18 2026 19:21:10
+I (24) boot: Multicore bootloader
+I (25) boot: chip revision: v0.2
+I (27) boot: efuse block revision: v1.3
+I (30) boot.esp32s3: Boot SPI Speed : 80MHz
+I (34) boot.esp32s3: SPI Mode       : DIO
+I (38) boot.esp32s3: SPI Flash Size : 2MB
+I (42) boot: Enabling RNG early entropy source...
+I (46) boot: Partition Table:
+I (49) boot: ## Label            Usage          Type ST Offset   Length
+I (55) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (62) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (68) boot:  2 factory          factory app      00 00 00010000 00100000
+I (75) boot: End of partition table
+I (78) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=0dfb0h ( 57264) map
+I (96) esp_image: segment 1: paddr=0001dfd8 vaddr=3fc93700 size=02040h (  8256) load
+I (98) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=1c364h (115556) map
+I (121) esp_image: segment 3: paddr=0003c38c vaddr=3fc95740 size=0138ch (  5004) load
+I (123) esp_image: segment 4: paddr=0003d720 vaddr=40374000 size=0f620h ( 63008) load
+I (140) esp_image: segment 5: paddr=0004cd48 vaddr=50000000 size=00024h (    36) load
+I (147) boot: Loaded app from partition at offset 0x10000
+I (147) boot: Disabling RNG early entropy source...
+I (157) cpu_start: Multicore app
+I (166) cpu_start: GPIO 44 and 43 are used as console UART I/O pins
+I (167) cpu_start: Pro cpu start user code
+I (167) cpu_start: cpu freq: 160000000 Hz
+I (168) app_init: Application information:
+I (172) app_init: Project name:     st7789_test
+I (176) app_init: App version:      v.4.11.0-6-g26e91f0-dirty
+I (182) app_init: Compile time:     Sep 18 2026 19:21:05
+I (187) app_init: ELF file SHA256:  7e88a70af...
+I (191) app_init: ESP-IDF:          v6.1
+I (195) efuse_init: Min chip rev:     v0.0
+I (199) efuse_init: Max chip rev:     v0.99 
+I (202) efuse_init: Chip rev:         v0.2
+I (206) heap_init: Initializing. RAM available for dynamic allocation:
+I (213) heap_init

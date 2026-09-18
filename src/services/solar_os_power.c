@@ -7,6 +7,7 @@
 #include "esp_pm.h"
 #include "nvs.h"
 #include "solar_os_board.h"
+#include "solar_os_board_caps.h"
 #include "solar_os_log.h"
 
 #define POWER_NVS_NAMESPACE "power"
@@ -117,7 +118,11 @@ static void profile_pm_config(solar_os_power_profile_t profile,
         *max_mhz = max_value;
     }
     if (automatic_light_sleep != NULL) {
+#if SOLAR_OS_BOARD_DISABLE_LIGHT_SLEEP
+        *automatic_light_sleep = false;
+#else
         *automatic_light_sleep = auto_sleep;
+#endif
     }
 }
 

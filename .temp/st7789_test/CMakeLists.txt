@@ -1,0 +1,6 @@
+# Minimum CMakeLists for ST7789 display test
+cmake_minimum_required(VERSION 3.16)
+
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
+project(st7789_test)

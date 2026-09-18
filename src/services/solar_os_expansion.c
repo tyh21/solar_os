@@ -527,6 +527,66 @@ static esp_err_t acquire_binding_buses(const solar_os_expansion_binding_t *bindi
     return ESP_OK;
 }
 
+#if defined(SOLAR_OS_BOARD_PCA9557_I2C_BUS) && defined(SOLAR_OS_BOARD_PCA9557_I2C_ADDR)
+/* Boards whose LCD CS lives behind a PCA9557 I/O expander (e.g. the
+ * LCSC handheld_esp32_s3) must have CS driven HIGH before the SPI bus
+ * is initialized.  spi_bus_initialize routes the SPI clock/MOSI pins
+ * through the GPIO matrix; while CS is floating (PCA9557 powers up
+ * high-impedance) those edges reach the panel and corrupt its receive
+ * state machine into a mode that no command sequence can recover
+ * (verified experimentally; SWRESET + full register re-init fails).
+ * The panel has no wired reset on this board, so the corruption can
+ * only be cleared by a power cycle.  Holding CS deselected from the
+ * very first moment keeps every SPI edge out of the panel until we
+ * deliberately select it, matching the proven vendor/test-program
+ * order: I2C+PCA9557 first, then spi_bus_initialize. */
+static esp_err_t pca9557_preselect_guard(void)
+{
+    const esp_err_t acquire_ret = solar_os_bus_acquire(
+        SOLAR_OS_BOARD_PCA9557_I2C_BUS, SOLAR_OS_BUS_PROTOCOL_I2C, "pca_guard");
+    if (acquire_ret != ESP_OK) {
+        /* i2c0 unavailable (e.g. already claimed exclusively) — the guard
+         * cannot run; proceed and let the driver's own handling apply. */
+        return ESP_OK;
+    }
+    /* Output register 0x01: bit0=LCD_CS high (deselected),
+     * bit1=PA_EN on, bit2=DVP_PWDN off (must be 0 — see
+     * tft_display.c pca9557_prepare comment).  Config 0x03: P0/P1/P2
+     * outputs, upper pins stay inputs. */
+    const uint8_t cs_high = 0x03;
+    const esp_err_t write_ret = solar_os_bus_i2c_write_reg(
+        SOLAR_OS_BOARD_PCA9557_I2C_BUS, SOLAR_OS_BOARD_PCA9557_I2C_ADDR,
+        0x01, &cs_high, 1);
+    const uint8_t config = 0xf8;
+    const esp_err_t config_ret = solar_os_bus_i2c_write_reg(
+        SOLAR_OS_BOARD_PCA9557_I2C_BUS, SOLAR_OS_BOARD_PCA9557_I2C_ADDR,
+        0x03, &config, 1);
+    (void)solar_os_bus_release(SOLAR_OS_BOARD_PCA9557_I2C_BUS,
+                               SOLAR_OS_BUS_PROTOCOL_I2C, "pca_guard");
+    ESP_LOGI("expansion", "PCA9557 guard: CS deselected before SPI start "
+                          "(out=%s cfg=%s)",
+             write_ret == ESP_OK ? "ok" : esp_err_to_name(write_ret),
+             config_ret == ESP_OK ? "ok" : esp_err_to_name(config_ret));
+    return write_ret == ESP_OK ? config_ret : write_ret;
+}
+#endif
+
+/* Returns true when a device's bindings reference at least one SPI bus
+ * that is not yet started.  Guarding only makes sense right before the
+ * first spi_bus_initialize of this device. */
+static bool bindings_reference_spi_bus(const solar_os_expansion_binding_t *bindings,
+                                       size_t binding_count)
+{
+    for (size_t i = 0; i < binding_count; i++) {
+        expansion_bus_ref_t ref;
+        if (binding_bus_ref(&bindings[i], &ref) &&
+            ref.protocol == SOLAR_OS_BUS_PROTOCOL_SPI) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static bool expansion_device_exists(const char *name)
 {
     if (!devices_lock_take()) {
@@ -1066,6 +1126,20 @@ static esp_err_t expansion_attach(const char *driver,
             return ret;
         }
     }
+
+#if defined(SOLAR_OS_BOARD_PCA9557_I2C_BUS) && defined(SOLAR_OS_BOARD_PCA9557_I2C_ADDR)
+    /* Before the first SPI bus of this device is started (inside
+     * acquire_binding_buses below), make sure the expander-held LCD CS
+     * is deselected so spi_bus_initialize edges cannot reach the panel. */
+    if (bindings_reference_spi_bus(normalized, binding_count)) {
+        const esp_err_t guard_ret = pca9557_preselect_guard();
+        if (guard_ret != ESP_OK) {
+            (void)solar_os_resource_release_owner(name);
+            release_device_reservation(node);
+            return guard_ret;
+        }
+    }
+#endif
 
     const esp_err_t bus_ret = acquire_binding_buses(normalized, binding_count, name);
     if (bus_ret != ESP_OK) {
