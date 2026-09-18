@@ -455,13 +455,21 @@ static esp_err_t ili9341_fill_screen(tft_ili9341_t *display, uint16_t rgb565) {
       ili9341_set_window(display, 0, 0, display->config.width - 1,
                          display->config.height - 1),
       TAG, "window failed");
-  ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG, "ram write failed");
 
   ili9341_fill_line(display, rgb565, display->config.width);
   if (display->panel_io) {
+    /* ST7789/ILI9341 require the RAMWR command and the first pixel data in
+     * the same CS-asserted transaction. esp_lcd_panel_io_tx_param deasserts
+     * CS after a parameterless command, so a standalone RAMWR would be lost:
+     * the panel would not latch into GRAM-write mode and every subsequent
+     * tx_color(-1) chunk (CS toggling per transaction) would be discarded.
+     * First row therefore goes out as tx_color(RAMWR); follow-up rows keep
+     * writing GRAM because the write pointer survives CS deassertion (same
+     * model as the plain spi_master path, which also toggles CS per row). */
     for (uint16_t row = 0; row < display->config.height; row++) {
       ESP_RETURN_ON_ERROR(
-          esp_lcd_panel_io_tx_color(display->panel_io, -1,
+          esp_lcd_panel_io_tx_color(display->panel_io,
+                                    row == 0U ? 0x2C : -1,
                                     display->line_buffer,
                                     display->config.width * 2U),
           TAG, "fill panel_io tx_color failed");
@@ -634,17 +642,18 @@ static esp_err_t ili9341_draw_tile_run(tft_ili9341_t *display,
   ESP_RETURN_ON_ERROR(
       ili9341_set_window(display, x, y, x + width - 1, y + height - 1), TAG,
       "tile window failed");
-  ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG, "tile ram write failed");
 
   const ili9341_tile_lines_t lines = {.data = tile_data};
   if (display->panel_io) {
-    /* esp_lcd_panel_io_tx_color sends pixel data with DC=1 */
-    /* For panel_io path, render to a single buffer and send via tx_color */
+    /* esp_lcd_panel_io_tx_color sends pixel data with DC=1; RAMWR must ride
+     * in the same transaction as the first row (see ili9341_fill_screen). */
     for (uint16_t row = 0; row < height; row++) {
       ili9341_render_tile_line(display, &lines, row, width, display->line_buffer);
       const size_t row_bytes = (size_t)width * 2U;
       ESP_RETURN_ON_ERROR(
-          esp_lcd_panel_io_tx_color(display->panel_io, -1, display->line_buffer,
+          esp_lcd_panel_io_tx_color(display->panel_io,
+                                    row == 0U ? 0x2C : -1,
+                                    display->line_buffer,
                                     row_bytes),
           TAG, "panel_io tx_color failed");
     }
@@ -946,8 +955,6 @@ esp_err_t tft_ili9341_present_surface(
       ESP_RETURN_ON_ERROR(
           ili9341_set_window(display, x_start, y_start, x_end, y_end), TAG,
           "indexed window failed");
-      ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG,
-                          "indexed ram write failed");
       const ili9341_index8_lines_t lines = {
           .surface = surface,
           .x = x_start,
@@ -959,7 +966,8 @@ esp_err_t tft_ili9341_present_surface(
           ili9341_render_index8_line(display, &lines, row, width,
                                      display->line_buffer);
           ESP_RETURN_ON_ERROR(
-              esp_lcd_panel_io_tx_color(display->panel_io, -1,
+              esp_lcd_panel_io_tx_color(display->panel_io,
+                                        row == 0U ? 0x2C : -1,
                                         display->line_buffer,
                                         (size_t)width * 2U),
               TAG, "indexed panel_io tx_color failed");
@@ -1244,14 +1252,14 @@ esp_err_t tft_ili9341_present_frame(
       ili9341_set_window(display, present_x0, present_y0,
                          present_x1, present_y1),
       TAG, "frame window failed");
-  ESP_RETURN_ON_ERROR(ili9341_cmd(display, 0x2c), TAG,
-                      "frame ram write failed");
   if (display->panel_io) {
+    /* RAMWR rides with the first row; see ili9341_fill_screen. */
     for (uint16_t row = 0; row < present_height; row++) {
       ili9341_render_frame_line(display, &lines, row, present_width,
                                 display->line_buffer);
       ESP_RETURN_ON_ERROR(
-          esp_lcd_panel_io_tx_color(display->panel_io, -1,
+          esp_lcd_panel_io_tx_color(display->panel_io,
+                                    row == 0U ? 0x2C : -1,
                                     display->line_buffer,
                                     (size_t)present_width * 2U),
           TAG, "frame panel_io tx_color failed");

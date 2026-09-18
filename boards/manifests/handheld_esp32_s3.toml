@@ -99,7 +99,7 @@ host = "SPI3_HOST"
 sclk = 41
 mosi = 40
 cs = []
-max_transfer_size = 4096
+max_transfer_size = 153600
 
 [[buses]]
 name = "i2c0"
