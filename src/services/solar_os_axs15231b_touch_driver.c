@@ -13,7 +13,10 @@ const solar_os_expansion_driver_t solar_os_axs15231b_touch_expansion_driver = {
     .summary = "capacitive touch",
     .required_capabilities = SOLAR_OS_BOARD_CAP_I2C | SOLAR_OS_BOARD_CAP_GFX,
     .probe_supported = true,
-    .early = true,
+    /* Not early: the attach resolves the primary display target, which is
+     * only registered once the display service initializes (after the
+     * early expansion pass). */
+    .early = false,
     .binding_specs = binding_specs,
     .binding_spec_count = sizeof(binding_specs) / sizeof(binding_specs[0]),
     .attach = solar_os_axs15231b_touch_attach,

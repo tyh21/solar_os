@@ -940,6 +940,13 @@ bool solar_os_shell_expansion_parse_binding_token(
                           SOLAR_OS_EXPANSION_BINDING_PARAMETER,
                           "active", "", active, -1);
     }
+    if (strcmp(key, "rotation") == 0) {
+        int rotation = 0;
+        return parse_int_arg(value, 0, 3, &rotation) &&
+            binding_store(bindings, binding_count,
+                          SOLAR_OS_EXPANSION_BINDING_PARAMETER,
+                          "rotation", "", rotation, -1);
+    }
     if (strcmp(key, "min") == 0 || strcmp(key, "center") == 0 ||
         strcmp(key, "max") == 0 || strcmp(key, "deadzone") == 0) {
         int parameter = 0;

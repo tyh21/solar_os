@@ -3,10 +3,10 @@ AIGC:
   ContentProducer: '001191110102MAD55U9H0F10002'
   ContentPropagator: '001191110102MAD55U9H0F10002'
   Label: '1'
-  ProduceID: '1de29552-6ec1-4bbf-a605-d3f75e3fc298'
-  PropagateID: '1de29552-6ec1-4bbf-a605-d3f75e3fc298'
-  ReservedCode1: '98253039-fced-44c4-82a6-a5c8e1d65214'
-  ReservedCode2: '98253039-fced-44c4-82a6-a5c8e1d65214'
+  ProduceID: '77395169-6b63-4a0d-9ef8-dcc3a6b17d41'
+  PropagateID: '77395169-6b63-4a0d-9ef8-dcc3a6b17d41'
+  ReservedCode1: 'db7c202d-7ce8-47df-bbdc-6d8277f95770'
+  ReservedCode2: 'db7c202d-7ce8-47df-bbdc-6d8277f95770'
 ---
 
 # SolarOS Changelog
@@ -17,12 +17,20 @@ AIGC:
   target with its 320x480 AXS15231B quad-SPI color display, built-in
   resistive-free touch controller, AXP2101 power management, and TCA9554
   expander-backed panel reset. The AXS15231B driver streams whole frames
-  through a PSRAM framebuffer because the panel exposes no row window, and
-  the touch driver speaks the controller's custom 11-byte-header I2C
-  protocol in polled mode. A new `wave35b-core` early driver applies the
-  verified TCA9554 reset pulse followed by the DC1-only AXP2101 rail
-  sequence with 25 kHz PWM backlight. `uart_port` now supports TX-only
-  boards whose only free pin pair lacks an RX line.
+  through a PSRAM framebuffer because the panel exposes no row window;
+  each CS transaction carries a command frame (RAMWR 0x2C for the first
+  row, RAMWRC 0x3C for subsequent rows) so the panel resumes the GRAM
+  pointer correctly. The display init sequence now includes the
+  SLPOUT/MADCTL/COLMOD prelude and a trailing DISPON (0x29) that the
+  reference component sends. The touch driver speaks the controller's
+  custom 11-byte-header I2C protocol in polled mode with rotation=1 to
+  match the landscape R1 display orientation. A new `wave35b-core` early
+  driver applies the verified TCA9554 reset pulse followed by the
+  DC1-only AXP2101 rail sequence with 25 kHz PWM backlight. `uart_port`
+  and `solar_os_uart` now support TX-only boards whose only free pin pair
+  lacks an RX line (GPIO_NUM_NC). The touch driver is registered as
+  non-early so it attaches after the display service has registered its
+  primary target.
 - **4.11.0** — 2026-09-12 — Replaced the Bluedroid BLE backend with
   NimBLE, reducing internal RAM use while retaining BLE keyboard pairing,
   reconnect, and sleep/wake support. Python and Lua applications can now

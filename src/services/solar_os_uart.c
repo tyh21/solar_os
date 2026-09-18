@@ -365,7 +365,10 @@ esp_err_t solar_os_uart_register_bus(const char *name,
     if (name == NULL || name[0] == '\0' ||
         strnlen(name, SOLAR_OS_BUS_NAME_MAX) >= SOLAR_OS_BUS_NAME_MAX ||
         config == NULL || config->port < 0 || config->port >= UART_NUM_MAX ||
-        config->tx_pin < 0 || config->rx_pin < 0 ||
+        config->tx_pin < 0 ||
+        /* GPIO_NUM_NC means TX-only (no RX line); other negative pins are
+         * invalid. */
+        (config->rx_pin != GPIO_NUM_NC && config->rx_pin < 0) ||
         config->tx_pin == config->rx_pin ||
         !solar_os_uart_is_valid_baud_rate(config->baud_rate)) {
         return ESP_ERR_INVALID_ARG;

@@ -104,7 +104,7 @@ bindings = { cs = 12, bl = 6, active = 1, pwm = 1 }
 [[devices]]
 driver = "axs15231b-touch"
 name = "touch0"
-bindings = { i2c = "i2c0", addr = 0x3B, rotation = 0 }
+bindings = { i2c = "i2c0", addr = 0x3B, rotation = 1 }
 
 [[devices]]
 driver = "es8311-duplex"

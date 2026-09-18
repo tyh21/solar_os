@@ -9,6 +9,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "solar_os_buses.h"
+#include "solar_os_log.h"
 
 /*
  * Waveshare ESP32-S3-Touch-LCD-3.5B power/reset sequencing, following the
@@ -224,10 +225,20 @@ esp_err_t solar_os_wave35b_core_attach(const char *name,
         parse_bindings(bindings, binding_count, i2c_bus, sizeof(i2c_bus),
                        &pmic_address, &expander_address),
         TAG, "invalid bindings");
-    ESP_RETURN_ON_ERROR(solar_os_bus_i2c_probe(i2c_bus, expander_address),
-                        TAG, "TCA9554 not found");
-    ESP_RETURN_ON_ERROR(solar_os_bus_i2c_probe(i2c_bus, pmic_address),
-                        TAG, "AXP2101 not found");
+    const esp_err_t expander_probe =
+        solar_os_bus_i2c_probe(i2c_bus, expander_address);
+    if (expander_probe != ESP_OK) {
+        SOLAR_OS_LOGE(TAG, "TCA9554 0x%02x probe failed: %s",
+                      (unsigned)expander_address,
+                      esp_err_to_name(expander_probe));
+        return expander_probe;
+    }
+    const esp_err_t pmic_probe = solar_os_bus_i2c_probe(i2c_bus, pmic_address);
+    if (pmic_probe != ESP_OK) {
+        SOLAR_OS_LOGE(TAG, "AXP2101 0x%02x probe failed: %s",
+                      (unsigned)pmic_address, esp_err_to_name(pmic_probe));
+        return pmic_probe;
+    }
 
     ESP_RETURN_ON_ERROR(run_reset_pulse(i2c_bus, expander_address), TAG,
                         "TCA9554 reset pulse failed");
@@ -243,6 +254,8 @@ esp_err_t solar_os_wave35b_core_attach(const char *name,
 
     ESP_LOGI(TAG, "%s attached on %s: panel reset released, PMIC rails set",
              name, i2c_bus);
+    SOLAR_OS_LOGI(TAG, "%s attached: panel reset released, PMIC rails set",
+                  name);
     return ESP_OK;
 }
 

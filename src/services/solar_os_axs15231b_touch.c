@@ -8,6 +8,7 @@
 #include "solar_os_buses.h"
 #include "solar_os_display.h"
 #include "solar_os_input.h"
+#include "solar_os_log.h"
 
 /*
  * The AXS15231B touch controller shares the panel's custom I2C protocol:
@@ -116,22 +117,31 @@ esp_err_t solar_os_axs15231b_touch_attach(const char *name,
     solar_os_display_target_t target;
     if (!solar_os_display_find_target(SOLAR_OS_DISPLAY_PRIMARY_TARGET, &target) ||
         target.width == 0 || target.height == 0) {
+        SOLAR_OS_LOGE(TAG, "primary display target not found");
         return ESP_ERR_NOT_FOUND;
     }
     candidate.target_width = target.width;
     candidate.target_height = target.height;
-    ESP_RETURN_ON_ERROR(
-        solar_os_bus_i2c_probe(candidate.i2c_bus, candidate.address),
-        TAG, "touch controller not found");
+    const esp_err_t probe_err =
+        solar_os_bus_i2c_probe(candidate.i2c_bus, candidate.address);
+    if (probe_err != ESP_OK) {
+        SOLAR_OS_LOGE(TAG, "touch controller 0x%02x probe failed: %s",
+                      (unsigned)candidate.address, esp_err_to_name(probe_err));
+        return probe_err;
+    }
 
     strlcpy(candidate.name, name, sizeof(candidate.name));
     esp_err_t err = solar_os_input_touch_source_open(candidate.name,
                                                      &candidate.input_source);
     if (err != ESP_OK) {
+        SOLAR_OS_LOGE(TAG, "input touch source open failed: %s",
+                      esp_err_to_name(err));
         return err;
     }
     candidate.active = true;
     touch = candidate;
+    SOLAR_OS_LOGI(TAG, "%s attached: AXS15231B touch on %s rotation=%u",
+                  name, candidate.i2c_bus, (unsigned)candidate.rotation);
     return ESP_OK;
 }
 
