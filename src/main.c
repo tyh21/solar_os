@@ -62,6 +62,7 @@
 #include "solar_os_scheduler.h"
 #include "solar_os_splash.h"
 #include "solar_os_storage.h"
+#include "solar_os_fontbank.h"
 #include "solar_os_terminal_internal.h"
 #include "solar_os_time.h"
 #include "solar_os_uart.h"
@@ -1735,6 +1736,7 @@ void app_main(void)
     }
     update_status();
     ESP_LOGI(TAG, "boot milestone: status ready");
+    (void)solar_os_fontbank_load();
 
     if (terminal != NULL) {
         const bool shell_started = solar_os_sessions_switch_to_app(solar_os_shell_app());

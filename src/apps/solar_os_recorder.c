@@ -1425,7 +1425,7 @@ static void recorder_render_browser_graphics(solar_os_gfx_t *gfx,
             solar_os_gfx_set_color(gfx, SOLAR_OS_GFX_COLOR_BLACK);
         }
         solar_os_gfx_set_font(gfx, SOLAR_OS_GFX_FONT_MONO_14);
-        solar_os_gfx_text(gfx, 9, y + 17, label);
+        solar_os_gfx_text_gbk(gfx, 9, y + 17, label);
     }
     solar_os_gfx_set_color(gfx, SOLAR_OS_GFX_COLOR_BLACK);
     solar_os_gfx_set_font(gfx, SOLAR_OS_GFX_FONT_SMALL);

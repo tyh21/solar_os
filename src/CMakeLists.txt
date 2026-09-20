@@ -357,6 +357,11 @@ file(WRITE "${SOLAR_OS_GENERATED_OTA_KEY_HEADER}"
 )
 
 set(SOLAR_OS_SRCS)
+list(APPEND SOLAR_OS_SRCS
+    "services/solar_os_fontbank.c"
+    "services/solar_os_text_gbk.c"
+    "services/solar_os_gbk_table.c"
+)
 set(SOLAR_OS_REQUIRES)
 
 function(solar_os_require_board_driver is_enabled capability_name variable_name)

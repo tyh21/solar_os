@@ -183,9 +183,15 @@ esp_err_t solar_os_power_apply_runtime_policy(void)
 
 #if CONFIG_PM_ENABLE
 #if CONFIG_FREERTOS_USE_TICKLESS_IDLE
+    /* Suspend keeps the CPU awake on purpose: the KEY press that resumes
+     * must reach handle_key_short_press() to exit suspend, and the wake
+     * press would be lost inside an automatic light sleep. Suppression
+     * also prevents idle-task autosleep from fighting the suspended
+     * display state. */
     const bool effective_light_sleep =
         profile_automatic_light_sleep &&
         !power_status.explicit_sleep_active &&
+        !power_status.suspend_active &&
         power_status.automatic_light_sleep_holdoff_ms == 0;
 #else
     const bool effective_light_sleep = false;

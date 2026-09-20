@@ -15,6 +15,7 @@
 #include "solar_os_audio.h"
 #include "solar_os_display.h"
 #include "solar_os_gfx.h"
+#include "solar_os_text_gbk.h"
 #include "solar_os_keys.h"
 #include "solar_os_log.h"
 #include "solar_os_media_widgets.h"
@@ -577,9 +578,14 @@ static void player_render_play(solar_os_gfx_t *gfx, int width, int height)
     solar_os_gfx_set_color(gfx, SOLAR_OS_GFX_COLOR_BLACK);
     solar_os_gfx_line(gfx, 0, media_top, width - 1, media_top);
     solar_os_gfx_set_font(gfx, SOLAR_OS_GFX_FONT_BOLD_16);
-    player_draw_centered(gfx, width, media_top + 20,
-                         player.active_path[0] != '\0' ?
-                            player_basename(player.active_path) : "No track selected");
+    if (player.active_path[0] != '\0') {
+        char name_utf8[320];
+        solar_os_text_gbk_to_utf8(player_basename(player.active_path), SIZE_MAX,
+                                  name_utf8, sizeof(name_utf8));
+        player_draw_centered(gfx, width, media_top + 20, name_utf8);
+    } else {
+        player_draw_centered(gfx, width, media_top + 20, "No track selected");
+    }
     player_draw_progress(gfx, width, height, false);
     const int volume_width = width / 2;
     const int volume_x = (width - volume_width) / 2;
@@ -644,7 +650,7 @@ static void player_render_list(solar_os_gfx_t *gfx, int width, int height)
             solar_os_gfx_set_color(gfx, SOLAR_OS_GFX_COLOR_BLACK);
         }
         solar_os_gfx_set_font(gfx, SOLAR_OS_GFX_FONT_MONO_14);
-        solar_os_gfx_text(gfx, 9, y + 17, label);
+        solar_os_gfx_text_gbk(gfx, 9, y + 17, label);
     }
     solar_os_gfx_set_color(gfx, SOLAR_OS_GFX_COLOR_BLACK);
     solar_os_gfx_set_font(gfx, SOLAR_OS_GFX_FONT_SMALL);

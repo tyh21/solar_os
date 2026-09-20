@@ -7,6 +7,8 @@
 
 #include "solar_os_display.h"
 #include "solar_os_fonts.h"
+#include "solar_os_fontbank.h"
+#include "solar_os_text_gbk.h"
 #include "solar_os_log.h"
 #include "solar_os_memory.h"
 
@@ -904,7 +906,26 @@ size_t solar_os_gfx_text_width(solar_os_gfx_t *gfx, const char *text)
     }
 
     gfx_apply_draw_state(gfx);
-    return (size_t)u8g2_GetUTF8Width(gfx->u8g2, text);
+    const char *p = text;
+    const char *end = text + strlen(text);
+    int width = 0;
+    while (p < end) {
+        uint32_t cp = solar_os_text_utf8_next(&p, end);
+        const uint8_t *g = solar_os_fontbank_is_wide(cp)
+                               ? solar_os_fontbank_glyph(cp) : NULL;
+        if (g != NULL) {
+            int cell = u8g2_GetMaxCharWidth(gfx->u8g2);
+            int adv = cell * 2;
+            if (adv < SOLAR_OS_FONTBANK_GLYPH_WIDTH) {
+                adv = SOLAR_OS_FONTBANK_GLYPH_WIDTH;
+            }
+            width += adv;
+        } else {
+            width += u8g2_GetGlyphWidth(gfx->u8g2,
+                                        (uint16_t)(cp & 0xFFFFU));
+        }
+    }
+    return (size_t)width;
 }
 
 void solar_os_gfx_set_line_style(solar_os_gfx_t *gfx, solar_os_gfx_line_style_t style)
@@ -1175,25 +1196,74 @@ void solar_os_gfx_text(solar_os_gfx_t *gfx, int x, int baseline_y, const char *t
     }
 
     gfx_apply_draw_state(gfx);
+    u8g2_t *u8g2 = gfx->u8g2;
+
+    const char *p = text;
+    const char *end = text + strlen(text);
+    int total_width = 0;
+    {
+        const char *q = text;
+        while (q < end) {
+            uint32_t cp = solar_os_text_utf8_next(&q, end);
+            const uint8_t *g = solar_os_fontbank_is_wide(cp)
+                                   ? solar_os_fontbank_glyph(cp) : NULL;
+            if (g != NULL) {
+                int cell = u8g2_GetMaxCharWidth(u8g2);
+                int adv = cell * 2;
+                if (adv < SOLAR_OS_FONTBANK_GLYPH_WIDTH) {
+                    adv = SOLAR_OS_FONTBANK_GLYPH_WIDTH;
+                }
+                total_width += adv;
+            } else {
+                total_width += u8g2_GetGlyphWidth(u8g2, (uint16_t)(cp & 0xFFFFU));
+            }
+        }
+    }
+
+    const int ascent = (int)u8g2_GetAscent(u8g2);
+    const int descent = (int)u8g2_GetDescent(u8g2);
+
     if (gfx_uses_index8(gfx)) {
-        const int text_width = (int)u8g2_GetUTF8Width(gfx->u8g2, text);
-        const int ascent = (int)u8g2_GetAscent(gfx->u8g2);
-        const int descent = (int)u8g2_GetDescent(gfx->u8g2);
         int x0 = x - 2;
         int y0 = baseline_y - ascent - 1;
-        int x1 = x + text_width + 2;
+        int x1 = x + total_width + 2;
         int y1 = baseline_y - descent + 1;
         if (x0 < 0) x0 = 0;
         if (y0 < 0) y0 = 0;
         if (x1 > (int)gfx->index8->surface.width) x1 = gfx->index8->surface.width;
         if (y1 > (int)gfx->index8->surface.height) y1 = gfx->index8->surface.height;
         if (x1 > x0 && y1 > y0) {
-            u8g2_SetDrawColor(gfx->u8g2, 0);
-            u8g2_DrawBox(gfx->u8g2, (u8g2_uint_t)x0, (u8g2_uint_t)y0,
+            u8g2_SetDrawColor(u8g2, 0);
+            u8g2_DrawBox(u8g2, (u8g2_uint_t)x0, (u8g2_uint_t)y0,
                          (u8g2_uint_t)(x1 - x0), (u8g2_uint_t)(y1 - y0));
-            u8g2_SetDrawColor(gfx->u8g2, 1);
-            u8g2_DrawUTF8(gfx->u8g2, (u8g2_uint_t)x,
-                          (u8g2_uint_t)baseline_y, text);
+            u8g2_SetDrawColor(u8g2, 1);
+
+            int cx = x;
+            while (p < end) {
+                uint32_t cp = solar_os_text_utf8_next(&p, end);
+                const uint8_t *g = solar_os_fontbank_is_wide(cp)
+                                       ? solar_os_fontbank_glyph(cp) : NULL;
+                if (g != NULL) {
+                    int cell = u8g2_GetMaxCharWidth(u8g2);
+                    int adv = cell * 2;
+                    if (adv < SOLAR_OS_FONTBANK_GLYPH_WIDTH) {
+                        adv = SOLAR_OS_FONTBANK_GLYPH_WIDTH;
+                    }
+                    int top = baseline_y - ascent +
+                              (ascent > SOLAR_OS_FONTBANK_GLYPH_HEIGHT
+                                   ? (ascent - SOLAR_OS_FONTBANK_GLYPH_HEIGHT) / 2
+                                   : 0);
+                    u8g2_DrawBitmap(u8g2, (u8g2_uint_t)cx, (u8g2_uint_t)top,
+                                    2, SOLAR_OS_FONTBANK_GLYPH_HEIGHT, g);
+                    cx += adv;
+                } else {
+                    u8g2_DrawGlyph(u8g2, (u8g2_uint_t)cx,
+                                   (u8g2_uint_t)baseline_y,
+                                   (uint16_t)(cp & 0xFFFFU));
+                    cx += u8g2_GetGlyphWidth(u8g2, (uint16_t)(cp & 0xFFFFU));
+                }
+            }
+
             for (int row = y0; row < y1; row++) {
                 for (int column = x0; column < x1; column++) {
                     if (gfx_u8g2_mask_pixel(gfx, column, row)) {
@@ -1206,9 +1276,44 @@ void solar_os_gfx_text(solar_os_gfx_t *gfx, int x, int baseline_y, const char *t
             gfx_mark_index8_dirty_rect(gfx, x0, y0, x1 - x0, y1 - y0);
         }
     } else {
-        u8g2_DrawUTF8(gfx->u8g2, (u8g2_uint_t)x, (u8g2_uint_t)baseline_y, text);
+        int cx = x;
+        while (p < end) {
+            uint32_t cp = solar_os_text_utf8_next(&p, end);
+            const uint8_t *g = solar_os_fontbank_is_wide(cp)
+                                   ? solar_os_fontbank_glyph(cp) : NULL;
+            if (g != NULL) {
+                int cell = u8g2_GetMaxCharWidth(u8g2);
+                int adv = cell * 2;
+                if (adv < SOLAR_OS_FONTBANK_GLYPH_WIDTH) {
+                    adv = SOLAR_OS_FONTBANK_GLYPH_WIDTH;
+                }
+                int top = baseline_y - ascent +
+                          (ascent > SOLAR_OS_FONTBANK_GLYPH_HEIGHT
+                               ? (ascent - SOLAR_OS_FONTBANK_GLYPH_HEIGHT) / 2
+                               : 0);
+                u8g2_DrawBitmap(u8g2, (u8g2_uint_t)cx, (u8g2_uint_t)top,
+                                2, SOLAR_OS_FONTBANK_GLYPH_HEIGHT, g);
+                cx += adv;
+            } else {
+                u8g2_DrawGlyph(u8g2, (u8g2_uint_t)cx,
+                               (u8g2_uint_t)baseline_y,
+                               (uint16_t)(cp & 0xFFFFU));
+                cx += u8g2_GetGlyphWidth(u8g2, (uint16_t)(cp & 0xFFFFU));
+            }
+        }
     }
     gfx_mark_dirty(gfx);
+}
+
+void solar_os_gfx_text_gbk(solar_os_gfx_t *gfx, int x, int baseline_y,
+                           const char *text)
+{
+    if (!gfx_ready(gfx) || text == NULL) {
+        return;
+    }
+    char buf[320];
+    solar_os_text_gbk_to_utf8(text, SIZE_MAX, buf, sizeof(buf));
+    solar_os_gfx_text(gfx, x, baseline_y, buf);
 }
 
 void solar_os_gfx_icon(solar_os_gfx_t *gfx,
