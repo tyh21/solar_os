@@ -6,6 +6,7 @@
 
 #include "solar_os_keys.h"
 #include "solar_os_terminal.h"
+#include "solar_os_text_gbk.h"
 
 #define SOLAR_OS_TUI_AUTO_FULLSCREEN_MAX_ROWS 10U
 
@@ -97,7 +98,8 @@ static size_t tui_widget_width(const char *text)
         const size_t consumed = tui_widget_decode(text, &codepoint);
         if (consumed == 0) break;
         text += consumed;
-        width++;
+        /* Wide (CJK) glyphs occupy two terminal cells. */
+        width += codepoint <= 0xffffU && solar_os_text_is_wide(codepoint) ? 2U : 1U;
     }
     return width;
 }
@@ -285,10 +287,12 @@ esp_err_t solar_os_tui_write_cell(solar_os_tui_t *tui,
         uint32_t codepoint = 0;
         const size_t consumed = tui_widget_decode(text, &codepoint);
         if (consumed == 0) break;
+        const bool wide = codepoint <= 0xffffU && solar_os_text_is_wide(codepoint);
+        if (wide && cell + 1U >= width) break; /* no room for both cells */
         err = solar_os_tui_putch(tui, row, col + cell, codepoint, attr);
         if (err != ESP_OK) return err;
         text += consumed;
-        cell++;
+        cell += wide ? 2U : 1U;
     }
     return ESP_OK;
 }

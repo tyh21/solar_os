@@ -26,6 +26,7 @@
 #include "solar_os_storage.h"
 #include "solar_os_task.h"
 #include "solar_os_terminal.h"
+#include "solar_os_text_gbk.h"
 #include "solar_os_tui.h"
 #include "solar_os_tui_widgets.h"
 #include "solar_os_zip.h"
@@ -35,6 +36,9 @@
 #define FILES_INPUT_MAX 80
 #define FILES_INITIAL_CAPACITY 32U
 #define FILES_PANEL_MIN_WIDTH 18U
+/* GBK display names expand up to 1.5x as UTF-8 (2 -> 3 bytes). */
+#define FILES_DISPLAY_NAME_MAX (FILES_NAME_MAX * 2)
+#define FILES_DISPLAY_PATH_MAX (SOLAR_OS_STORAGE_PATH_MAX * 2 + 1)
 #define FILES_ZIP_TASK_STACK 24576
 #define FILES_ZIP_TASK_PRIORITY 4
 SOLAR_OS_TASK_REQUIRE_FOREGROUND_STACK(FILES_ZIP_TASK_STACK);
@@ -201,6 +205,20 @@ static const char *files_basename(const char *path)
         base--;
     }
     return base;
+}
+
+/* Converts a GBK file name/path to UTF-8 for on-screen display. */
+static const char *files_display_utf8(char *buffer, size_t buffer_size, const char *gbk_text)
+{
+    if (buffer == NULL || buffer_size == 0) {
+        return "";
+    }
+    if (gbk_text == NULL) {
+        buffer[0] = '\0';
+        return buffer;
+    }
+    (void)solar_os_text_gbk_to_utf8(gbk_text, SIZE_MAX, buffer, buffer_size);
+    return buffer;
 }
 
 static bool files_is_hidden_name(const char *name)
@@ -561,9 +579,15 @@ static void files_set_error(const char *operation, const char *path)
              operation != NULL ? operation : "error",
              strerror(errno));
     if (path != NULL && path[0] != '\0') {
+        char display_name[FILES_DISPLAY_NAME_MAX];
         const size_t used = strlen(message);
         if (used + 2 < sizeof(message)) {
-            snprintf(message + used, sizeof(message) - used, ": %s", files_basename(path));
+            snprintf(message + used,
+                     sizeof(message) - used,
+                     ": %s",
+                     files_display_utf8(display_name,
+                                        sizeof(display_name),
+                                        files_basename(path)));
         }
     }
     files_set_message(message);
@@ -698,8 +722,11 @@ static const char *files_transaction_title(files_transaction_kind_t kind)
 static void files_transaction_set_item(const char *path)
 {
     const char *item = files_basename(path);
+    char display[FILES_DISPLAY_NAME_MAX];
     strlcpy(files.transaction.item,
-            item[0] != '\0' ? item : path != NULL ? path : "",
+            files_display_utf8(display,
+                               sizeof(display),
+                               item[0] != '\0' ? item : path != NULL ? path : ""),
             sizeof(files.transaction.item));
 }
 
@@ -774,7 +801,7 @@ static void files_draw_entry(files_pane_t *pane,
         return;
     }
 
-    char name[FILES_NAME_MAX + 2];
+    char name[FILES_DISPLAY_NAME_MAX];
     if (entry->parent) {
         strlcpy(name, "../", sizeof(name));
     } else if (entry->is_dir) {
@@ -782,6 +809,7 @@ static void files_draw_entry(files_pane_t *pane,
     } else {
         strlcpy(name, entry->name, sizeof(name));
     }
+    files_display_utf8(name, sizeof(name), name);
 
     char size_text[12] = "";
     if (entry->is_dir) {
@@ -827,9 +855,15 @@ static void files_draw_pane(files_pane_t *pane,
     const bool active = pane_index == files.active;
     const uint8_t title_attr = active ? SOLAR_OS_TUI_ATTR_INVERSE | SOLAR_OS_TUI_ATTR_BOLD
                                       : SOLAR_OS_TUI_ATTR_BOLD;
+    char title[FILES_DISPLAY_PATH_MAX];
     solar_os_tui_box(&files.tui, row, col, height, width, SOLAR_OS_TUI_ATTR_NORMAL);
     solar_os_tui_fill(&files.tui, row, col + 1, 1, width - 2U, ' ', title_attr);
-    solar_os_tui_write_cell(&files.tui, row, col + 2, width - 4U, pane->path, title_attr);
+    solar_os_tui_write_cell(&files.tui,
+                            row,
+                            col + 2,
+                            width - 4U,
+                            files_display_utf8(title, sizeof(title), pane->path),
+                            title_attr);
 
     const size_t list_row = row + 1U;
     const size_t list_col = col + 1U;
@@ -1146,8 +1180,11 @@ static void files_worker_publish(const char *path,
         .total_known = total_known,
     };
     const char *item = files_basename(path);
+    char display[FILES_DISPLAY_NAME_MAX];
     strlcpy(event.item,
-            item[0] != '\0' ? item : path != NULL ? path : "",
+            files_display_utf8(display,
+                               sizeof(display),
+                               item[0] != '\0' ? item : path != NULL ? path : ""),
             sizeof(event.item));
     (void)xQueueOverwrite(files.worker.events, &event);
 }
@@ -1804,7 +1841,11 @@ static void files_begin_delete(void)
     if (selected > 0) {
         snprintf(files.message, sizeof(files.message), "delete %u selected items? y/N", (unsigned)selected);
     } else {
-        snprintf(files.message, sizeof(files.message), "delete %s? y/N", entry->name);
+        char display_name[FILES_DISPLAY_NAME_MAX];
+        snprintf(files.message,
+                 sizeof(files.message),
+                 "delete %s? y/N",
+                 files_display_utf8(display_name, sizeof(display_name), entry->name));
     }
 }
 

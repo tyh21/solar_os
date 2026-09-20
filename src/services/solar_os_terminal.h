@@ -10,6 +10,15 @@
 #define SOLAR_OS_TERMINAL_MAX_COLS 96
 #define SOLAR_OS_TERMINAL_MAX_ROWS 64
 
+/*
+ * Reserved codepoint stored in the second (continuation) cell of a
+ * double-width glyph. 0x01 is never a printable codepoint (the terminal
+ * maps it to nothing), so it can never collide with real text, and being
+ * non-zero it does not terminate terminal_line_len() scans.
+ */
+#define SOLAR_OS_TERMINAL_WIDE_MARKER 0x01
+bool solar_os_terminal_cell_is_wide_marker(uint16_t cell);
+
 typedef enum {
     SOLAR_OS_TERMINAL_FONT_MONO,
     SOLAR_OS_TERMINAL_FONT_COMPACT,

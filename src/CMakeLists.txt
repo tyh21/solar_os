@@ -464,6 +464,7 @@ idf_component_register(
                  "../include" "${SOLAR_OS_GENERATED_DIR}"
                  ${SOLAR_OS_EXTRA_INCLUDE_DIRS}
     REQUIRES ${SOLAR_OS_REQUIRES}
+    EMBED_FILES "data/font16.bin"
 )
 
 target_compile_definitions(${COMPONENT_LIB} PRIVATE

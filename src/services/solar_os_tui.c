@@ -9,6 +9,7 @@
 #include "solar_os_sessions.h"
 #include "solar_os_shell_io.h"
 #include "solar_os_terminal.h"
+#include "solar_os_text_gbk.h"
 
 #define TUI_BOX_H 0x2500U
 #define TUI_BOX_V 0x2502U
@@ -372,6 +373,11 @@ static esp_err_t tui_buffer_put_codepoint(solar_os_tui_t *tui, uint32_t codepoin
     if (codepoint == '\b') {
         if (tui->draw_col > 0) {
             tui->draw_col--;
+            /* Wide glyph continuation cell: erase the pair together. */
+            const size_t back_index = (size_t)tui->draw_row * tui->diff_cols + tui->draw_col;
+            if (tui->front_codepoints[back_index] == SOLAR_OS_TERMINAL_WIDE_MARKER) {
+                tui->draw_col--;
+            }
         }
         tui->cursor_row = tui->draw_row;
         tui->cursor_col = tui->draw_col;
@@ -391,10 +397,28 @@ static esp_err_t tui_buffer_put_codepoint(solar_os_tui_t *tui, uint32_t codepoin
         return ESP_OK;
     }
 
+    const bool wide = codepoint >= 0x20U && codepoint <= 0xffffU &&
+        solar_os_text_is_wide(codepoint);
+    /* A wide glyph needs two cells; wrap early when only one remains. */
+    if (wide && tui->draw_col + 1U >= tui->diff_cols) {
+        tui->draw_col = 0;
+        if (tui->draw_row + 1U < tui->diff_rows) {
+            tui->draw_row++;
+        }
+        tui->cursor_row = tui->draw_row;
+        tui->cursor_col = tui->draw_col;
+    }
+
     const size_t index = (size_t)tui->draw_row * tui->diff_cols + tui->draw_col;
     tui->front_codepoints[index] = codepoint >= 0x20U ? codepoint : ' ';
     tui->front_attrs[index] = tui->draw_attr;
     tui_buffer_track_cell(tui);
+    if (wide) {
+        const size_t marker_index = (size_t)tui->draw_row * tui->diff_cols + tui->draw_col;
+        tui->front_codepoints[marker_index] = SOLAR_OS_TERMINAL_WIDE_MARKER;
+        tui->front_attrs[marker_index] = tui->draw_attr;
+        tui_buffer_track_cell(tui);
+    }
     return ESP_OK;
 }
 
@@ -677,6 +701,10 @@ static esp_err_t tui_emit_codepoint(solar_os_tui_t *tui, uint32_t codepoint)
     const esp_err_t err = solar_os_shell_io_write_raw(tui->io, bytes, len);
     if (err == ESP_OK) {
         tui_track_cell(tui);
+        /* Wide glyphs occupy two columns on the remote terminal. */
+        if (codepoint <= 0xffffU && solar_os_text_is_wide(codepoint)) {
+            tui_track_cell(tui);
+        }
     }
     return err;
 }
@@ -746,6 +774,13 @@ static esp_err_t tui_refresh_diff(solar_os_tui_t *tui)
                         (tui->front_codepoints[run_index] == tui->back_codepoints[run_index] &&
                          tui->front_attrs[run_index] == tui->back_attrs[run_index])) {
                         break;
+                    }
+                    /* Continuation cell of a wide glyph: the first cell
+                     * already emitted the full double-width glyph. */
+                    if (tui->front_codepoints[run_index] ==
+                        SOLAR_OS_TERMINAL_WIDE_MARKER) {
+                        col++;
+                        continue;
                     }
                     err = tui_emit_codepoint(tui, tui->front_codepoints[run_index]);
                     if (err != ESP_OK) {

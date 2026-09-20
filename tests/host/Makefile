@@ -294,10 +294,12 @@ terminal_preferences_test: terminal_preferences_test.c $(ROOT)/src/services/sola
 	$(CC) $(CFLAGS) -I. -I$(ROOT)/src -I$(ROOT)/src/services \
 		terminal_preferences_test.c $(ROOT)/src/services/solar_os_terminal_preferences.c -o $@
 
-tui_widgets_test: tui_widgets_test.c $(ROOT)/src/services/solar_os_tui_widgets.c $(ROOT)/src/services/solar_os_tui_widgets.h
+tui_widgets_test: tui_widgets_test.c $(ROOT)/src/services/solar_os_tui_widgets.c $(ROOT)/src/services/solar_os_tui_widgets.h $(ROOT)/src/services/solar_os_text_gbk.c $(ROOT)/src/services/solar_os_text_gbk.h $(ROOT)/src/services/solar_os_gbk_table.c $(ROOT)/src/services/solar_os_gbk_table.h
 	$(CC) $(CFLAGS) -D_GNU_SOURCE -ffunction-sections -fdata-sections -I. \
 		-I$(ROOT)/src -I$(ROOT)/src/services -I$(ROOT)/src/shell \
 		tui_widgets_test.c $(ROOT)/src/services/solar_os_tui_widgets.c \
+		$(ROOT)/src/services/solar_os_text_gbk.c \
+		$(ROOT)/src/services/solar_os_gbk_table.c \
 		-Wl,--gc-sections -o $@
 
 wireguard_crypto_test: wireguard_crypto_test.c $(ROOT)/components/wireguard_lwip/src/crypto.c $(ROOT)/components/wireguard_lwip/src/crypto/refc/x25519.c

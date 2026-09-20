@@ -7,11 +7,13 @@
 
 #include "solar_os_board.h"
 #include "solar_os_display.h"
+#include "solar_os_fontbank.h"
 #include "solar_os_fonts.h"
 #include "solar_os_log.h"
 #include "solar_os_memory.h"
 #include "solar_os_terminal_geometry.h"
 #include "solar_os_terminal_preferences.h"
+#include "solar_os_text_gbk.h"
 
 #define TERM_MARGIN_X 4
 #define TERM_STATUS_BAR_HEIGHT 16
@@ -384,6 +386,26 @@ static solar_os_terminal_cell_t terminal_cell_for_codepoint(uint32_t codepoint)
         return 0;
     }
     return (solar_os_terminal_cell_t)codepoint;
+}
+
+static bool terminal_is_wide_codepoint(uint32_t codepoint)
+{
+    return codepoint <= 0xffff && solar_os_text_is_wide(codepoint);
+}
+
+bool solar_os_terminal_cell_is_wide_marker(uint16_t cell)
+{
+    return cell == SOLAR_OS_TERMINAL_WIDE_MARKER;
+}
+
+static void terminal_cell_clear_attrs(solar_os_terminal_t *terminal,
+                                      size_t row,
+                                      size_t col)
+{
+    terminal_bold_set(terminal->bold[row], col, false);
+    terminal_italic_set(terminal->italic[row], col, false);
+    terminal_underline_set(terminal->underline[row], col, false);
+    terminal_inverse_set(terminal->inverse[row], col, false);
 }
 
 static size_t terminal_line_len(const solar_os_terminal_t *terminal,
@@ -1049,13 +1071,22 @@ void solar_os_terminal_backspace(solar_os_terminal_t *terminal)
     terminal_return_to_live(terminal);
     if (terminal->cursor_col > 0) {
         terminal->cursor_col--;
+        /* Wide glyphs occupy two cells; erase the pair together. */
+        if (terminal->cursor_col > 0 &&
+            terminal->lines[terminal->cursor_row][terminal->cursor_col] ==
+            SOLAR_OS_TERMINAL_WIDE_MARKER) {
+            terminal->cursor_col--;
+        }
         terminal->lines[terminal->cursor_row][terminal->cursor_col] = 0;
-        terminal_bold_set(terminal->bold[terminal->cursor_row], terminal->cursor_col, false);
-        terminal_italic_set(terminal->italic[terminal->cursor_row], terminal->cursor_col, false);
-        terminal_underline_set(terminal->underline[terminal->cursor_row],
-                               terminal->cursor_col,
-                               false);
-        terminal_inverse_set(terminal->inverse[terminal->cursor_row], terminal->cursor_col, false);
+        terminal_cell_clear_attrs(terminal, terminal->cursor_row, terminal->cursor_col);
+        if (terminal->cursor_col + 1 < terminal_cols(terminal) &&
+            terminal->lines[terminal->cursor_row][terminal->cursor_col + 1] ==
+            SOLAR_OS_TERMINAL_WIDE_MARKER) {
+            terminal->lines[terminal->cursor_row][terminal->cursor_col + 1] = 0;
+            terminal_cell_clear_attrs(terminal,
+                                      terminal->cursor_row,
+                                      terminal->cursor_col + 1);
+        }
         solar_os_terminal_mark_dirty(terminal);
         return;
     }
@@ -1068,13 +1099,21 @@ void solar_os_terminal_backspace(solar_os_terminal_t *terminal)
     terminal->cursor_col = terminal_line_len(terminal, terminal->lines[terminal->cursor_row]);
     if (terminal->cursor_col > 0) {
         terminal->cursor_col--;
+        if (terminal->cursor_col > 0 &&
+            terminal->lines[terminal->cursor_row][terminal->cursor_col] ==
+            SOLAR_OS_TERMINAL_WIDE_MARKER) {
+            terminal->cursor_col--;
+        }
         terminal->lines[terminal->cursor_row][terminal->cursor_col] = 0;
-        terminal_bold_set(terminal->bold[terminal->cursor_row], terminal->cursor_col, false);
-        terminal_italic_set(terminal->italic[terminal->cursor_row], terminal->cursor_col, false);
-        terminal_underline_set(terminal->underline[terminal->cursor_row],
-                               terminal->cursor_col,
-                               false);
-        terminal_inverse_set(terminal->inverse[terminal->cursor_row], terminal->cursor_col, false);
+        terminal_cell_clear_attrs(terminal, terminal->cursor_row, terminal->cursor_col);
+        if (terminal->cursor_col + 1 < terminal_cols(terminal) &&
+            terminal->lines[terminal->cursor_row][terminal->cursor_col + 1] ==
+            SOLAR_OS_TERMINAL_WIDE_MARKER) {
+            terminal->lines[terminal->cursor_row][terminal->cursor_col + 1] = 0;
+            terminal_cell_clear_attrs(terminal,
+                                      terminal->cursor_row,
+                                      terminal->cursor_col + 1);
+        }
         solar_os_terminal_mark_dirty(terminal);
     }
 }
@@ -1088,9 +1127,15 @@ void solar_os_terminal_put_codepoint(solar_os_terminal_t *terminal, uint32_t cod
     if (cell == 0) {
         return;
     }
+    const bool wide = terminal_is_wide_codepoint(codepoint) &&
+        cell != SOLAR_OS_TERMINAL_WIDE_MARKER;
 
     terminal_return_to_live(terminal);
     if (terminal->cursor_col >= terminal_cols(terminal)) {
+        solar_os_terminal_newline(terminal);
+    }
+    /* A wide glyph needs two cells; wrap early when only one remains. */
+    if (wide && terminal->cursor_col + 1 >= terminal_cols(terminal)) {
         solar_os_terminal_newline(terminal);
     }
 
@@ -1098,26 +1143,31 @@ void solar_os_terminal_put_codepoint(solar_os_terminal_t *terminal, uint32_t cod
     const size_t line_len = terminal_line_len(terminal, line);
     for (size_t col = line_len; col < terminal->cursor_col; col++) {
         line[col] = ' ';
-        terminal_bold_set(terminal->bold[terminal->cursor_row], col, false);
-        terminal_italic_set(terminal->italic[terminal->cursor_row], col, false);
-        terminal_underline_set(terminal->underline[terminal->cursor_row], col, false);
-        terminal_inverse_set(terminal->inverse[terminal->cursor_row], col, false);
+        terminal_cell_clear_attrs(terminal, terminal->cursor_row, col);
     }
 
+    const size_t wide_cells = wide ? 2 : 1;
     terminal->lines[terminal->cursor_row][terminal->cursor_col] = cell;
-    terminal_bold_set(terminal->bold[terminal->cursor_row],
-                      terminal->cursor_col,
-                      terminal->bold_enabled);
-    terminal_italic_set(terminal->italic[terminal->cursor_row],
-                        terminal->cursor_col,
-                        terminal->italic_enabled);
-    terminal_underline_set(terminal->underline[terminal->cursor_row],
-                           terminal->cursor_col,
-                           terminal->underline_enabled);
-    terminal_inverse_set(terminal->inverse[terminal->cursor_row],
-                         terminal->cursor_col,
-                         terminal->inverse_enabled);
-    terminal->cursor_col++;
+    if (wide) {
+        terminal->lines[terminal->cursor_row][terminal->cursor_col + 1] =
+            SOLAR_OS_TERMINAL_WIDE_MARKER;
+    }
+    for (size_t i = 0; i < wide_cells; i++) {
+        const size_t col = terminal->cursor_col + i;
+        terminal_bold_set(terminal->bold[terminal->cursor_row],
+                          col,
+                          terminal->bold_enabled);
+        terminal_italic_set(terminal->italic[terminal->cursor_row],
+                            col,
+                            terminal->italic_enabled);
+        terminal_underline_set(terminal->underline[terminal->cursor_row],
+                               col,
+                               terminal->underline_enabled);
+        terminal_inverse_set(terminal->inverse[terminal->cursor_row],
+                             col,
+                             terminal->inverse_enabled);
+    }
+    terminal->cursor_col += wide_cells;
     if (terminal->cursor_col > line_len) {
         terminal->lines[terminal->cursor_row][terminal->cursor_col] = 0;
     }
@@ -1223,8 +1273,9 @@ void solar_os_terminal_write_utf8(solar_os_terminal_t *terminal, const char *tex
 
 void solar_os_terminal_write(solar_os_terminal_t *terminal, const char *text)
 {
-    for (const char *p = text; p != NULL && *p != '\0'; p++) {
-        solar_os_terminal_put_char(terminal, *p);
+    for (const unsigned char *p = (const unsigned char *)text;
+         p != NULL && *p != '\0'; p++) {
+        solar_os_terminal_put_utf8_byte(terminal, *p);
     }
 }
 
@@ -2069,8 +2120,12 @@ static void terminal_draw_cell(solar_os_terminal_t *terminal,
                                bool bold,
                                bool italic,
                                bool underline,
-                               bool inverse)
+                               bool inverse,
+                               bool wide)
 {
+    const uint8_t cell_width = wide ?
+        (uint8_t)(terminal->char_width * 2) : terminal->char_width;
+
     if (inverse) {
         int top_y = y - terminal->cell_ascent;
         int height = terminal->line_height;
@@ -2080,11 +2135,7 @@ static void terminal_draw_cell(solar_os_terminal_t *terminal,
         }
         terminal_set_draw_color(terminal, u8g2, 0);
         if (height > 0) {
-            u8g2_DrawBox(u8g2,
-                         (u8g2_uint_t)x,
-                         (u8g2_uint_t)top_y,
-                         terminal->char_width,
-                         height);
+            u8g2_DrawBox(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)top_y, cell_width, height);
         }
         terminal_set_draw_color(terminal, u8g2, 1);
     } else {
@@ -2095,23 +2146,39 @@ static void terminal_draw_cell(solar_os_terminal_t *terminal,
         terminal_set_draw_color(terminal, u8g2, 0);
         return;
     }
-    if (terminal_draw_box_cell(u8g2, x, y, terminal->char_width, terminal->line_height, cell) ||
-        terminal_draw_block_cell(u8g2, x, y, terminal->char_width, terminal->line_height, cell)) {
+    if (terminal_draw_box_cell(u8g2, x, y, cell_width, terminal->line_height, cell) ||
+        terminal_draw_block_cell(u8g2, x, y, cell_width, terminal->line_height, cell)) {
         terminal_set_draw_color(terminal, u8g2, 0);
         return;
     }
 
-    u8g2_SetFont(u8g2, terminal_selected_font(terminal, bold, italic));
-    if (text_scale == 2) {
-        (void)u8g2_DrawGlyphX2(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)y, cell);
+    if (wide) {
+        const uint8_t *glyph = solar_os_fontbank_glyph(cell);
+        if (glyph != NULL) {
+            int top = y - terminal->cell_ascent;
+            if (terminal->cell_ascent > SOLAR_OS_FONTBANK_GLYPH_HEIGHT) {
+                top += (terminal->cell_ascent - SOLAR_OS_FONTBANK_GLYPH_HEIGHT) / 2;
+            }
+            u8g2_DrawBitmap(u8g2,
+                            (u8g2_uint_t)x,
+                            (u8g2_uint_t)(top < 0 ? 0 : top),
+                            SOLAR_OS_FONTBANK_GLYPH_BYTES / SOLAR_OS_FONTBANK_GLYPH_HEIGHT,
+                            SOLAR_OS_FONTBANK_GLYPH_HEIGHT,
+                            glyph);
+        } else {
+            u8g2_SetFont(u8g2, terminal_selected_font(terminal, bold, italic));
+            (void)u8g2_DrawGlyph(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)y, cell);
+        }
     } else {
-        (void)u8g2_DrawGlyph(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)y, cell);
+        u8g2_SetFont(u8g2, terminal_selected_font(terminal, bold, italic));
+        if (text_scale == 2) {
+            (void)u8g2_DrawGlyphX2(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)y, cell);
+        } else {
+            (void)u8g2_DrawGlyph(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)y, cell);
+        }
     }
     if (underline) {
-        u8g2_DrawHLine(u8g2,
-                       (u8g2_uint_t)x,
-                       (u8g2_uint_t)(y + 1),
-                       terminal->char_width);
+        u8g2_DrawHLine(u8g2, (u8g2_uint_t)x, (u8g2_uint_t)(y + 1), cell_width);
     }
     terminal_set_draw_color(terminal, u8g2, 0);
 }
@@ -2129,17 +2196,30 @@ static void terminal_draw_line(solar_os_terminal_t *terminal,
     const size_t line_len = terminal_line_len(terminal, line);
 
     for (size_t pos = 0; pos < line_len; pos++) {
+        const solar_os_terminal_cell_t cell = line[pos];
+        /* Continuation cell of a wide glyph: the first cell already
+         * painted the full 2*char_width glyph. */
+        if (cell == SOLAR_OS_TERMINAL_WIDE_MARKER) {
+            continue;
+        }
+        const bool wide = cell != 0 &&
+            pos + 1 < line_len &&
+            line[pos + 1] == SOLAR_OS_TERMINAL_WIDE_MARKER;
         const int x = TERM_MARGIN_X + (int)(pos * terminal->char_width);
         terminal_draw_cell(terminal,
                            u8g2,
                            text_scale,
                            x,
                            (int)y,
-                           line[pos],
+                           cell,
                            bold != NULL && terminal_bold_get(bold, pos),
                            italic != NULL && terminal_italic_get(italic, pos),
                            underline != NULL && terminal_underline_get(underline, pos),
-                           inverse != NULL && terminal_inverse_get(inverse, pos));
+                           inverse != NULL && terminal_inverse_get(inverse, pos),
+                           wide);
+        if (wide) {
+            pos++;
+        }
     }
 }
 
@@ -2792,7 +2872,8 @@ static void terminal_draw_footer(solar_os_terminal_t *terminal,
                            false,
                            false,
                            false,
-                           true);
+                           true,
+                           false);
     }
     terminal_set_draw_color(terminal, u8g2, 0);
 }

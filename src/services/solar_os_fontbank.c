@@ -9,6 +9,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+/* Font binary embedded into firmware flash via EMBED_FILES. */
+extern const uint8_t font16_bin_start[] asm("_binary_font16_bin_start");
+extern const uint8_t font16_bin_end[]   asm("_binary_font16_bin_end");
+
 static const char *TAG = "fontbank";
 
 struct solar_os_fontbank_state {
@@ -25,6 +29,42 @@ static uint32_t read_u32_le(const uint8_t *p)
 {
     return (uint32_t)p[0] | ((uint32_t)p[1] << 8) |
            ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
+}
+
+/*
+ * Validates the FNT1 header and installs the buffer as the active font bank.
+ * Takes ownership of *buf on success (caller must NOT free it).
+ * On failure *buf is left for the caller to free.
+ * Returns true on success.
+ */
+static bool fontbank_install(uint8_t *buf, size_t size)
+{
+    if (size < 16) {
+        ESP_LOGW(TAG, "font bin too small: %u", (unsigned)size);
+        return false;
+    }
+    if (memcmp(buf, "FNT1", 4) != 0) {
+        ESP_LOGW(TAG, "font bin bad magic");
+        return false;
+    }
+    uint32_t glyph_count = read_u32_le(buf + 8);
+    if (glyph_count == 0 || glyph_count > 65535) {
+        ESP_LOGW(TAG, "font bin bad glyph count: %u", glyph_count);
+        return false;
+    }
+    /* directory starts at offset 12, each entry is 8 bytes */
+    size_t dir_end = 12 + (size_t)glyph_count * 8;
+    if (dir_end > size) {
+        ESP_LOGW(TAG, "font bin directory exceeds file: %u > %u",
+                 (unsigned)dir_end, (unsigned)size);
+        return false;
+    }
+
+    g_state.data = buf;
+    g_state.size = size;
+    g_state.dir_base = 12;
+    g_state.dir_count = glyph_count;
+    return true;
 }
 
 static bool load_from_path(const char *path)
@@ -48,7 +88,7 @@ static bool load_from_path(const char *path)
     rewind(f);
 
     uint8_t *buf = (uint8_t *)heap_caps_malloc((size_t)size,
-                                              MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                               MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (buf == NULL) {
         ESP_LOGW(TAG, "PSRAM alloc failed (%ld bytes)", size);
         fclose(f);
@@ -63,30 +103,36 @@ static bool load_from_path(const char *path)
         return false;
     }
 
-    if (buf[0] != 'F' || buf[1] != 'N' || buf[2] != 'T' || buf[3] != '1') {
-        ESP_LOGW(TAG, "bad magic: %02x%02x%02x%02x", buf[0], buf[1], buf[2], buf[3]);
+    if (!fontbank_install(buf, (size_t)size)) {
         free(buf);
+        return false;
+    }
+    ESP_LOGI(TAG, "loaded %s: %u glyphs, %u bytes", path, g_state.dir_count, (unsigned)g_state.size);
+    return true;
+}
+
+static bool load_from_embedded(void)
+{
+    const size_t size = (size_t)(font16_bin_end - font16_bin_start);
+    if (size <= 12 || size > (2 * 1024 * 1024)) {
+        ESP_LOGW(TAG, "embedded font bin bad size: %u", (unsigned)size);
         return false;
     }
 
-    uint32_t count = read_u32_le(buf + 8);
-    if (count == 0 || count > 70000) {
-        ESP_LOGW(TAG, "bad glyph count: %u", count);
-        free(buf);
-        return false;
-    }
-    uint32_t dir_bytes = count * 8U + 12U;
-    if (dir_bytes > (uint32_t)size) {
-        ESP_LOGW(TAG, "directory overruns file");
-        free(buf);
+    uint8_t *buf = (uint8_t *)heap_caps_malloc(size,
+                                               MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (buf == NULL) {
+        ESP_LOGW(TAG, "PSRAM alloc failed (%u bytes)", (unsigned)size);
         return false;
     }
 
-    g_state.data = buf;
-    g_state.size = (size_t)size;
-    g_state.dir_base = 12;
-    g_state.dir_count = count;
-    ESP_LOGI(TAG, "loaded %s: %u glyphs, %u bytes", path, count, (unsigned)size);
+    memcpy(buf, font16_bin_start, size);
+
+    if (!fontbank_install(buf, size)) {
+        free(buf);
+        return false;
+    }
+    ESP_LOGI(TAG, "loaded embedded: %u glyphs, %u bytes", g_state.dir_count, (unsigned)g_state.size);
     return true;
 }
 
@@ -98,7 +144,16 @@ bool solar_os_fontbank_load(void)
     xSemaphoreTake(g_state.lock, portMAX_DELAY);
     bool ok = (g_state.data != NULL);
     if (!ok) {
-        ok = load_from_path(SOLAR_OS_FONTBANK_PATH);
+        /* 1. Embedded font bin in firmware flash (always available) */
+        ok = load_from_embedded();
+        /* 2. SD card (user can override with a different font) */
+        if (!ok) {
+            ok = load_from_path(SOLAR_OS_FONTBANK_PATH);
+        }
+        /* 3. Internal flash FATFS partition */
+        if (!ok) {
+            ok = load_from_path(SOLAR_OS_FONTBANK_PATH_FLASH);
+        }
     }
     xSemaphoreGive(g_state.lock);
     return ok;

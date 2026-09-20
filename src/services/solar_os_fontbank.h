@@ -22,6 +22,9 @@
 /* Default font bin path on the mounted SD card. */
 #define SOLAR_OS_FONTBANK_PATH "/sdcard/fonts/font16.bin"
 
+/* Fallback path on internal flash when SD card is unavailable. */
+#define SOLAR_OS_FONTBANK_PATH_FLASH "/flash/fonts/font16.bin"
+
 /* Loaded glyph geometry (FNT1 16px font is 12x12). */
 #define SOLAR_OS_FONTBANK_GLYPH_BYTES 24
 #define SOLAR_OS_FONTBANK_GLYPH_WIDTH 12

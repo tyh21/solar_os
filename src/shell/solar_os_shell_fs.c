@@ -17,6 +17,7 @@
 #include "solar_os_memory.h"
 #include "solar_os_storage.h"
 #include "solar_os_task.h"
+#include "solar_os_text_gbk.h"
 #include "solar_os_zip.h"
 
 #define SHELL_PATH_MAX SOLAR_OS_STORAGE_PATH_MAX
@@ -26,6 +27,29 @@
 #define SHELL_ZIP_TASK_PRIORITY 4
 SOLAR_OS_TASK_REQUIRE_FOREGROUND_STACK(SHELL_ZIP_TASK_STACK);
 #define SHELL_ZIP_WAIT_POLL_MS 20U
+
+/*
+ * Display buffer for GBK file names converted to UTF-8. GBK names are at
+ * most 2*SHELL_PATH_MAX bytes; UTF-8 expansion is at most 1.5x (2 bytes ->
+ * 3 bytes), so this cannot overflow.
+ */
+#define SHELL_DISPLAY_PATH_MAX (SHELL_PATH_MAX * 2 + 1)
+
+/* Converts a GBK file name (or path) to UTF-8 for on-screen display. */
+static const char *shell_display_utf8(char *buffer,
+                                      size_t buffer_size,
+                                      const char *gbk_text)
+{
+    if (buffer == NULL || buffer_size == 0) {
+        return "";
+    }
+    if (gbk_text == NULL) {
+        buffer[0] = '\0';
+        return buffer;
+    }
+    (void)solar_os_text_gbk_to_utf8(gbk_text, SIZE_MAX, buffer, buffer_size);
+    return buffer;
+}
 
 typedef struct {
     bool show_all;
@@ -204,10 +228,13 @@ static size_t shell_for_each_wildcard_match(solar_os_context_t *ctx,
 
     DIR *dir = opendir(wildcard.dir_path);
     if (dir == NULL) {
+        char display_utf8[SHELL_DISPLAY_PATH_MAX];
         solar_os_shell_io_printf(term,
                                  "%s: cannot open %s: %s\n",
                                  command,
-                                 wildcard.dir_path,
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    wildcard.dir_path),
                                  strerror(errno));
         if (had_error != NULL) {
             *had_error = true;
@@ -344,6 +371,7 @@ static void shell_ls_print_entry_with_options(solar_os_shell_io_t *term,
     const bool stat_ok = full_path != NULL && stat(full_path, &st) == 0;
     const bool is_dir = stat_ok ? S_ISDIR(st.st_mode) : shell_path_is_dir(full_path);
     char size_text[16];
+    char display_utf8[SHELL_DISPLAY_PATH_MAX];
 
     if (is_dir) {
         strlcpy(size_text, "<DIR>", sizeof(size_text));
@@ -357,6 +385,7 @@ static void shell_ls_print_entry_with_options(solar_os_shell_io_t *term,
     }
 
     solar_os_shell_io_printf(term, "%8s ", size_text);
+    display_name = shell_display_utf8(display_utf8, sizeof(display_utf8), display_name);
     if (is_dir) {
         solar_os_shell_io_write_bold(term, display_name);
         solar_os_shell_io_put_char(term, '/');
@@ -372,7 +401,13 @@ static void shell_list_directory(solar_os_shell_io_t *term,
 {
     DIR *dir = opendir(path);
     if (dir == NULL) {
-        solar_os_shell_io_printf(term, "ls: cannot open %s: %s\n", path, strerror(errno));
+        char display_utf8[SHELL_DISPLAY_PATH_MAX];
+        solar_os_shell_io_printf(term,
+                                 "ls: cannot open %s: %s\n",
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    path),
+                                 strerror(errno));
         return;
     }
 
@@ -383,7 +418,13 @@ static void shell_list_directory(solar_os_shell_io_t *term,
             continue;
         }
         if (!join_path_checked(child_path, sizeof(child_path), path, entry->d_name)) {
-            solar_os_shell_io_printf(term, "%8s %s\n", "?", entry->d_name);
+            char display_utf8[SHELL_DISPLAY_PATH_MAX];
+            solar_os_shell_io_printf(term,
+                                     "%8s %s\n",
+                                     "?",
+                                     shell_display_utf8(display_utf8,
+                                                        sizeof(display_utf8),
+                                                        entry->d_name));
             continue;
         }
 
@@ -489,7 +530,13 @@ static bool shell_cat_file(solar_os_shell_io_t *term, const char *path, const ch
 {
     FILE *file = fopen(path, "r");
     if (file == NULL) {
-        solar_os_shell_io_printf(term, "cat: cannot open %s: %s\n", display_path, strerror(errno));
+        char display_utf8[SHELL_DISPLAY_PATH_MAX];
+        solar_os_shell_io_printf(term,
+                                 "cat: cannot open %s: %s\n",
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    display_path),
+                                 strerror(errno));
         return false;
     }
 
@@ -508,7 +555,12 @@ static bool shell_cat_file(solar_os_shell_io_t *term, const char *path, const ch
     }
 
     if (!feof(file)) {
-        solar_os_shell_io_printf(term, "\ncat: %s: truncated\n", display_path);
+        char display_utf8[SHELL_DISPLAY_PATH_MAX];
+        solar_os_shell_io_printf(term,
+                                 "\ncat: %s: truncated\n",
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    display_path));
     } else if (wrote_data && last_char != '\n') {
         solar_os_shell_io_newline(term);
     }
@@ -580,9 +632,12 @@ static bool shell_make_directory(solar_os_shell_io_t *term,
                                  const char *display_path)
 {
     if (solar_os_storage_mkdir(path) != ESP_OK) {
+        char display_utf8[SHELL_DISPLAY_PATH_MAX];
         solar_os_shell_io_printf(term,
                                  "mkdir: cannot create %s: %s\n",
-                                 display_path,
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    display_path),
                                  strerror(errno));
         return false;
     }
@@ -667,7 +722,13 @@ static bool shell_remove_file(solar_os_shell_io_t *term,
         return true;
     }
 
-    solar_os_shell_io_printf(term, "rm: cannot remove %s: %s\n", display_path, strerror(errno));
+    char display_utf8[SHELL_DISPLAY_PATH_MAX];
+    solar_os_shell_io_printf(term,
+                             "rm: cannot remove %s: %s\n",
+                             shell_display_utf8(display_utf8,
+                                                sizeof(display_utf8),
+                                                display_path),
+                             strerror(errno));
     return false;
 }
 
@@ -679,7 +740,13 @@ static bool shell_remove_empty_directory(solar_os_shell_io_t *term,
         return true;
     }
 
-    solar_os_shell_io_printf(term, "rm: cannot remove %s: %s\n", display_path, strerror(errno));
+    char display_utf8[SHELL_DISPLAY_PATH_MAX];
+    solar_os_shell_io_printf(term,
+                             "rm: cannot remove %s: %s\n",
+                             shell_display_utf8(display_utf8,
+                                                sizeof(display_utf8),
+                                                display_path),
+                             strerror(errno));
     return false;
 }
 
@@ -689,7 +756,12 @@ static bool shell_remove_recursive(solar_os_shell_io_t *term,
                                    const shell_rm_options_t *options)
 {
     if (shell_path_is_protected_root(path)) {
-        solar_os_shell_io_printf(term, "rm: refusing to remove root: %s\n", display_path);
+        char display_utf8[SHELL_DISPLAY_PATH_MAX];
+        solar_os_shell_io_printf(term,
+                                 "rm: refusing to remove root: %s\n",
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    display_path));
         return false;
     }
 
@@ -709,7 +781,12 @@ static bool shell_remove_recursive(solar_os_shell_io_t *term,
         char child_display[SHELL_PATH_MAX];
         if (!join_path_checked(child_path, sizeof(child_path), path, entry->d_name) ||
             !join_path_checked(child_display, sizeof(child_display), display_path, entry->d_name)) {
-            solar_os_shell_io_printf(term, "rm: path too long below %s\n", display_path);
+            char display_utf8[SHELL_DISPLAY_PATH_MAX];
+            solar_os_shell_io_printf(term,
+                                     "rm: path too long below %s\n",
+                                     shell_display_utf8(display_utf8,
+                                                        sizeof(display_utf8),
+                                                        display_path));
             ok = false;
             continue;
         }
@@ -735,6 +812,7 @@ static bool shell_remove_path(solar_os_shell_io_t *term,
                               const char *display_path,
                               const shell_rm_options_t *options)
 {
+    char display_utf8[SHELL_DISPLAY_PATH_MAX];
     if (shell_path_is_dir(path)) {
         if (options != NULL && options->recursive) {
             return shell_remove_recursive(term, path, display_path, options);
@@ -745,7 +823,9 @@ static bool shell_remove_path(solar_os_shell_io_t *term,
 
         solar_os_shell_io_printf(term,
                                  "rm: %s is a directory; use rm -f for empty dirs or rm -rf recursively\n",
-                                 display_path);
+                                 shell_display_utf8(display_utf8,
+                                                    sizeof(display_utf8),
+                                                    display_path));
         return false;
     }
 
