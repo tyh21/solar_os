@@ -91,6 +91,9 @@
 #include "solar_os_ssh.h"
 #endif
 #include "solar_os_terminal.h"
+#if SOLAR_OS_BOARD_HAS_POINTER
+#include "solar_os_vkb.h"
+#endif
 #if SOLAR_OS_PACKAGE_SERVICE_WIFI
 #include "solar_os_wifi.h"
 #endif
@@ -237,6 +240,9 @@ struct solar_os_shell_session {
     char watch_command[SHELL_INPUT_MAX];
     char exit_message[SOLAR_OS_CONTEXT_STATUS_MESSAGE_MAX];
     solar_os_shell_io_t io;
+#if SOLAR_OS_BOARD_HAS_POINTER
+    solar_os_vkb_t vkb;
+#endif
 };
 
 SOLAR_OS_APP_STATIC_SRAM_EXCEPTION("boot foreground shell session")
@@ -9129,6 +9135,81 @@ static bool shell_handle_log_follow_event(solar_os_context_t *ctx, const solar_o
     return false;
 }
 
+#if SOLAR_OS_BOARD_HAS_POINTER
+static void shell_handle_char(solar_os_context_t *ctx, char ch);
+
+static void shell_vkb_emit_action(solar_os_context_t *ctx,
+                                  const solar_os_vkb_action_t *action)
+{
+    switch (action->type) {
+    case SOLAR_OS_VKB_ACTION_CHAR:
+        shell_handle_char(ctx, action->ch);
+        break;
+    case SOLAR_OS_VKB_ACTION_BACKSPACE:
+        shell_handle_char(ctx, '\b');
+        break;
+    case SOLAR_OS_VKB_ACTION_ENTER:
+        shell_handle_char(ctx, '\r');
+        break;
+    case SOLAR_OS_VKB_ACTION_SPACE:
+        shell_handle_char(ctx, ' ');
+        break;
+    case SOLAR_OS_VKB_ACTION_LEFT:
+        shell_handle_char(ctx, (char)SOLAR_OS_KEY_LEFT);
+        break;
+    case SOLAR_OS_VKB_ACTION_RIGHT:
+        shell_handle_char(ctx, (char)SOLAR_OS_KEY_RIGHT);
+        break;
+    case SOLAR_OS_VKB_ACTION_SHIFT:
+    case SOLAR_OS_VKB_ACTION_SYMBOL:
+    case SOLAR_OS_VKB_ACTION_TOGGLE:
+        /* internal mode changes already handled by vkb */
+        break;
+    default:
+        break;
+    }
+    solar_os_shell_io_t *io = shell_io(ctx);
+    solar_os_terminal_t *term = solar_os_shell_io_terminal(io);
+    if (term != NULL) {
+        solar_os_terminal_invalidate_render(term);
+    }
+}
+
+static bool shell_handle_pointer_event(solar_os_context_t *ctx,
+                                       const solar_os_event_t *event)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    solar_os_vkb_t *vkb = &session->vkb;
+    solar_os_shell_io_t *io = shell_io(ctx);
+    solar_os_terminal_t *term = solar_os_shell_io_terminal(io);
+    if (term == NULL) {
+        return false;
+    }
+
+    /* Ensure vkb is attached to terminal and has display dimensions. */
+    if (solar_os_terminal_vkb(term) != vkb) {
+        solar_os_terminal_set_vkb(term, vkb);
+    }
+
+    const solar_os_input_pointer_event_t *pe = &event->data.pointer;
+    solar_os_vkb_action_t action;
+    bool consumed = solar_os_vkb_handle_pointer(vkb,
+                                                pe->action,
+                                                pe->x,
+                                                pe->y,
+                                                &action);
+    if (consumed) {
+        if (action.type != SOLAR_OS_VKB_ACTION_NONE) {
+            shell_vkb_emit_action(ctx, &action);
+        } else {
+            /* visibility or layout changed — still need a redraw */
+            solar_os_terminal_invalidate_render(term);
+        }
+    }
+    return consumed;
+}
+#endif
+
 static void shell_handle_char(solar_os_context_t *ctx, char ch)
 {
     const bool repeated_tab = ch == '\t' && shell_session(ctx)->previous_key_was_tab;
@@ -9270,6 +9351,9 @@ esp_err_t solar_os_shell_session_start(solar_os_context_t *ctx,
     session->log_follow_level = SOLAR_OS_LOG_LEVEL_INFO;
     session->foreground_app = NULL;
     session->watch_command[0] = '\0';
+#if SOLAR_OS_BOARD_HAS_POINTER
+    solar_os_vkb_init(&session->vkb);
+#endif
     if (!preserve_terminal) {
         shell_reset_cwd(session);
     }
@@ -9311,6 +9395,12 @@ bool solar_os_shell_session_event(solar_os_context_t *ctx,
     if (shell_handle_watch_event(ctx, event)) {
         return true;
     }
+
+#if SOLAR_OS_BOARD_HAS_POINTER
+    if (event != NULL && event->type == SOLAR_OS_EVENT_POINTER) {
+        return shell_handle_pointer_event(ctx, event);
+    }
+#endif
 
     if (event == NULL || event->type != SOLAR_OS_EVENT_CHAR) {
         return false;
@@ -9387,6 +9477,9 @@ static esp_err_t shell_start(solar_os_context_t *ctx)
     solar_os_shell_io_t *io = solar_os_shell_session_io(session);
 
     solar_os_shell_io_init_terminal(io, solar_os_context_terminal(ctx));
+#if SOLAR_OS_BOARD_HAS_POINTER
+    solar_os_terminal_set_vkb(solar_os_context_terminal(ctx), &session->vkb);
+#endif
     return solar_os_shell_session_start(ctx, session, io, preserve_terminal, true);
 }
 
@@ -9426,7 +9519,11 @@ static const solar_os_app_t shell_app = {
     .name = "shell",
     .summary = "SolarOS command shell",
     .app_class = SOLAR_OS_APP_CLASS_TUI,
-    .flags = SOLAR_OS_APP_FLAG_RESUMABLE,
+    .flags = SOLAR_OS_APP_FLAG_RESUMABLE
+#if SOLAR_OS_BOARD_HAS_POINTER
+           | SOLAR_OS_APP_FLAG_POINTER_EVENTS
+#endif
+    ,
     .start = shell_start,
     .resume = shell_resume,
     .stop = NULL,

@@ -6,6 +6,7 @@
 
 #include "esp_err.h"
 #include "solar_os.h"
+#include "solar_os_vkb.h"
 
 #define SOLAR_OS_TERMINAL_MAX_COLS 96
 #define SOLAR_OS_TERMINAL_MAX_ROWS 64
@@ -151,3 +152,11 @@ esp_err_t solar_os_terminal_apply_profile_transient(
 bool solar_os_terminal_needs_draw(const solar_os_terminal_t *terminal);
 void solar_os_terminal_invalidate_render(solar_os_terminal_t *terminal);
 void solar_os_terminal_draw(solar_os_terminal_t *terminal);
+
+/* Attach a virtual keyboard overlay.  When non-NULL and visible the
+ * terminal shrinks its text rows to make room and draws the keyboard
+ * at the bottom of the screen. */
+void solar_os_terminal_set_vkb(solar_os_terminal_t *terminal,
+                               solar_os_vkb_t *vkb);
+/* Return the attached vkb (may be NULL). */
+solar_os_vkb_t *solar_os_terminal_vkb(const solar_os_terminal_t *terminal);

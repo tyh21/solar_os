@@ -1,6 +1,7 @@
 #pragma once
 
 #include "solar_os_terminal.h"
+#include "solar_os_vkb.h"
 #include "u8g2.h"
 
 #define SOLAR_OS_TERMINAL_SCROLLBACK_ROWS 256
@@ -67,6 +68,7 @@ struct solar_os_terminal {
     uint32_t rendered_profile_hash;
     bool render_valid;
     bool dirty;
+    solar_os_vkb_t *vkb;
 };
 
 void solar_os_terminal_init(solar_os_terminal_t *terminal, u8g2_t *u8g2);

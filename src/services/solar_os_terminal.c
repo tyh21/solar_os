@@ -581,6 +581,17 @@ static void terminal_apply_settings(solar_os_terminal_t *terminal, bool clear_sc
 
     const int footer_height = terminal->footer_enabled ? line_height : 0;
 
+    /* Virtual keyboard overlay shrinks the text content area. */
+    int vkb_height = 0;
+#if SOLAR_OS_BOARD_HAS_POINTER
+    if (terminal->vkb != NULL) {
+        vkb_height = solar_os_vkb_overlay_height(terminal->vkb, display_height) -
+            (terminal->footer_enabled ? 0 : 0);
+        /* When vkb is visible it replaces the footer area; when hidden
+         * the trigger strip occupies the same bottom space. */
+    }
+#endif
+
     size_t cols = (size_t)((display_width - (TERM_MARGIN_X * 2)) / char_width);
     if (cols < 1) {
         cols = 1;
@@ -591,7 +602,7 @@ static void terminal_apply_settings(solar_os_terminal_t *terminal, bool clear_sc
     solar_os_terminal_geometry_t geometry;
     if (!solar_os_terminal_geometry_compute(display_height,
                                              status_bar_height,
-                                             footer_height,
+                                             footer_height + vkb_height,
                                              line_height,
                                              cell_ascent,
                                              SOLAR_OS_TERMINAL_MAX_ROWS,
@@ -1896,6 +1907,19 @@ bool solar_os_terminal_needs_draw(const solar_os_terminal_t *terminal)
     return terminal != NULL && terminal->dirty;
 }
 
+void solar_os_terminal_set_vkb(solar_os_terminal_t *terminal,
+                               solar_os_vkb_t *vkb)
+{
+    if (terminal == NULL) return;
+    terminal->vkb = vkb;
+    solar_os_terminal_invalidate_render(terminal);
+}
+
+solar_os_vkb_t *solar_os_terminal_vkb(const solar_os_terminal_t *terminal)
+{
+    return terminal != NULL ? terminal->vkb : NULL;
+}
+
 void solar_os_terminal_invalidate_render(solar_os_terminal_t *terminal)
 {
     if (terminal == NULL) {
@@ -2912,6 +2936,11 @@ static uint32_t terminal_render_profile_hash(const solar_os_terminal_t *terminal
     hash = terminal_render_hash_value(hash, terminal->cell_ascent);
     hash = terminal_render_hash_value(hash, terminal->baseline_offset);
     hash = terminal_render_hash_value(hash, u8g2_GetDisplayWidth(u8g2));
+#if SOLAR_OS_BOARD_HAS_POINTER
+    if (terminal->vkb != NULL) {
+        hash = terminal_render_hash_value(hash, solar_os_vkb_is_visible(terminal->vkb));
+    }
+#endif
     return terminal_render_hash_value(hash, u8g2_GetDisplayHeight(u8g2));
 }
 
@@ -3092,6 +3121,16 @@ void solar_os_terminal_draw(solar_os_terminal_t *terminal)
         u8g2_DrawHLine(u8g2, (u8g2_uint_t)cursor_x, (u8g2_uint_t)cursor_y, terminal->char_width);
         terminal_set_draw_color(terminal, u8g2, 0);
     }
+
+#if SOLAR_OS_BOARD_HAS_POINTER
+    /* Draw the virtual keyboard overlay (trigger strip or full keyboard). */
+    if (terminal->vkb != NULL) {
+        solar_os_vkb_draw(terminal->vkb, u8g2,
+                          terminal->palette_inverted,
+                          terminal->black_is_one);
+        changed = true;
+    }
+#endif
 
     if (changed) {
         solar_os_display_present(u8g2, SOLAR_OS_DISPLAY_PRESENT_TEXT);
