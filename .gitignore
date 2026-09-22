@@ -1,4 +1,6 @@
 .pio/
+.temp/
+.workbuddy/
 build/
 !fonts/build/
 fonts/build/*

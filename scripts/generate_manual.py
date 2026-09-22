@@ -71,6 +71,7 @@ DERIVED_ALIAS_OWNERS = {
     ("app.lua", "lua"): "lua",
     ("app.playground", "playground"): "playground",
     ("app.python", "python"): "python",
+    ("app.webradio", "webradio"): "command.webradio",
     ("job.controls", "controls"): "controls",
     ("job.daq", "daq"): "command.daq",
     ("job.espnow-link", "espnow-link"): "link",

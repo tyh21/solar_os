@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "esp_attr.h"
+#include "esp_log.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/portmacro.h"
@@ -40,6 +41,8 @@
 #include "solar_os_parameters.h"
 #endif
 #include "solar_os_display.h"
+#include "solar_os_fontbank.h"
+#include "solar_os_text_gbk.h"
 #if SOLAR_OS_PACKAGE_SERVICE_EXPANSION
 #include "solar_os_expansion.h"
 #include "solar_os_pins.h"
@@ -49,6 +52,7 @@
 #endif
 #include "solar_os_gpio.h"
 #include "solar_os_identity.h"
+#include "solar_os_ime.h"
 #include "solar_os_input.h"
 #if SOLAR_OS_PACKAGE_APP_INBOX
 #include "solar_os_inbox.h"
@@ -93,6 +97,9 @@
 #include "solar_os_terminal.h"
 #if SOLAR_OS_BOARD_HAS_POINTER
 #include "solar_os_vkb.h"
+#endif
+#if SOLAR_OS_PACKAGE_APP_WEBRADIO
+#include "solar_os_webradio_catalog.h"
 #endif
 #if SOLAR_OS_PACKAGE_SERVICE_WIFI
 #include "solar_os_wifi.h"
@@ -240,6 +247,17 @@ struct solar_os_shell_session {
     char watch_command[SHELL_INPUT_MAX];
     char exit_message[SOLAR_OS_CONTEXT_STATUS_MESSAGE_MAX];
     solar_os_shell_io_t io;
+    /* Pinyin IME composition state (shared by BLE keyboard and vkb). */
+    bool ime_enabled;                   /* shift toggles this */
+    bool ime_shift_pending;             /* bare shift held, awaiting release */
+    char ime_pinyin[SOLAR_OS_IME_PINYIN_MAX + 1];
+    size_t ime_start_cursor;            /* input cursor when pinyin began */
+    int ime_candidate_count;
+    int ime_page;                       /* 0-based candidate page */
+    int ime_page_count;
+    solar_os_ime_candidate_t ime_candidates[SOLAR_OS_IME_MAX_CANDIDATES];
+    char ime_candidate_text[SOLAR_OS_IME_MAX_CANDIDATES][16];
+    const char *ime_candidate_ptrs[SOLAR_OS_IME_MAX_CANDIDATES];
 #if SOLAR_OS_BOARD_HAS_POINTER
     solar_os_vkb_t vkb;
 #endif
@@ -363,6 +381,9 @@ esp_err_t solar_os_shell_startup_path(char *path, size_t path_len)
 static void cmd_commands(solar_os_context_t *ctx, int argc, char **argv);
 static void cmd_echo(solar_os_context_t *ctx, int argc, char **argv);
 static void cmd_sh(solar_os_context_t *ctx, int argc, char **argv);
+#if SOLAR_OS_PACKAGE_APP_WEBRADIO
+static void cmd_webradio(solar_os_context_t *ctx, int argc, char **argv);
+#endif
 static void cmd_wait(solar_os_context_t *ctx, int argc, char **argv);
 static void cmd_watch(solar_os_context_t *ctx, int argc, char **argv);
 static void cmd_reboot(solar_os_context_t *ctx, int argc, char **argv);
@@ -413,6 +434,9 @@ static const shell_command_t shell_builtin_commands[] = {
     {"rtc", "real-time clock hardware", solar_os_shell_cmd_rtc},
     {"schedule", "alarms and scheduled scripts", solar_os_shell_cmd_schedule},
     {"watch", "repeat a command", cmd_watch},
+#if SOLAR_OS_PACKAGE_APP_WEBRADIO
+    {"webradio", "stream internet radio and manage stations", cmd_webradio},
+#endif
     {"setterm", "configure terminal settings", solar_os_shell_cmd_setterm},
     {"status", "show system status", solar_os_shell_cmd_status},
     {"uptime", "show time since boot", solar_os_shell_cmd_uptime},
@@ -3406,6 +3430,80 @@ static bool shell_is_printable_char(char ch)
     return isprint(value) || value >= 0xa0;
 }
 
+/* ---- UTF-8 aware line-editing helpers -------------------------------- */
+
+/* Byte index of the character boundary before cursor (a full UTF-8
+ * character start; for ASCII input this is simply cursor-1). */
+static size_t shell_input_prev_char(const char *input, size_t cursor)
+{
+    size_t i = cursor;
+    while (i > 0) {
+        i--;
+        if (((uint8_t)input[i] & 0xC0) != 0x80) {
+            break;
+        }
+    }
+    return i;
+}
+
+/* Byte index of the character boundary after cursor. */
+static size_t shell_input_next_char(const char *input, size_t len, size_t cursor)
+{
+    size_t i = cursor;
+    if (i >= len) {
+        return i;
+    }
+    i++;
+    while (i < len && ((uint8_t)input[i] & 0xC0) == 0x80) {
+        i++;
+    }
+    return i;
+}
+
+/* Display columns occupied by input[start..end) (ASCII=1, CJK=2). */
+static size_t shell_input_cols(const char *input, size_t start, size_t end)
+{
+    size_t cols = 0;
+    size_t i = start;
+    const char *limit = input + end;
+    while (i < end) {
+        const char *p = input + i;
+        const uint32_t cp = solar_os_text_utf8_next(&p, limit);
+        if (cp == 0) {
+            break;
+        }
+        i = (size_t)(p - input);
+        cols += solar_os_fontbank_is_wide(cp) ? 2U : 1U;
+    }
+    return cols;
+}
+
+/* Byte index after consuming up to max_cols columns from cursor.  Stops
+ * at a character boundary so UTF-8 sequences are never split. */
+static size_t shell_input_advance_cols(const char *input,
+                                       size_t len,
+                                       size_t cursor,
+                                       size_t max_cols)
+{
+    size_t cols = 0;
+    size_t i = cursor;
+    const char *end = input + len;
+    while (i < len) {
+        const char *p = input + i;
+        const uint32_t cp = solar_os_text_utf8_next(&p, end);
+        if (cp == 0) {
+            break;
+        }
+        const size_t width = solar_os_fontbank_is_wide(cp) ? 2U : 1U;
+        if (cols + width > max_cols) {
+            break;
+        }
+        cols += width;
+        i = (size_t)(p - input);
+    }
+    return i;
+}
+
 static void shell_reset_cwd(solar_os_shell_session_t *session)
 {
     if (session != NULL) {
@@ -3533,6 +3631,8 @@ static void shell_prompt(solar_os_context_t *ctx)
     shell_session(ctx)->history_index = -1;
     shell_session(ctx)->history_browsing = false;
     shell_session(ctx)->previous_key_was_tab = false;
+    shell_session(ctx)->ime_pinyin[0] = '\0';
+    shell_session(ctx)->ime_candidate_count = 0;
     shell_session(ctx)->prompt_on_resume = false;
     shell_session(ctx)->clear_on_resume = false;
 
@@ -3620,13 +3720,25 @@ static void shell_dumb_backspace(solar_os_context_t *ctx)
 
 static void shell_ensure_cursor_visible(solar_os_context_t *ctx)
 {
+    solar_os_shell_session_t *session = shell_session(ctx);
     const size_t visible_cols = shell_visible_input_cols(ctx);
+    const size_t cursor = session->input_cursor;
+    size_t offset = session->input_view_offset;
 
-    if (shell_session(ctx)->input_cursor < shell_session(ctx)->input_view_offset) {
-        shell_session(ctx)->input_view_offset = shell_session(ctx)->input_cursor;
-    } else if (shell_session(ctx)->input_cursor >= shell_session(ctx)->input_view_offset + visible_cols) {
-        shell_session(ctx)->input_view_offset = shell_session(ctx)->input_cursor - visible_cols + 1;
+if (cursor < offset) {
+        /* Cursor walked left of the view: back to its character. */
+        session->input_view_offset = shell_input_prev_char(session->input, cursor + 1);
+        return;
     }
+    const size_t before_cols = shell_input_cols(session->input, offset, cursor);
+    if (before_cols < visible_cols) {
+        return;
+    }
+    /* Cursor at/after the right edge: advance the window so the cursor
+     * is the last visible column. */
+    const size_t skip = before_cols - visible_cols + 1;
+    session->input_view_offset = shell_input_advance_cols(
+        session->input, session->input_len, offset, skip);
 }
 
 static void shell_render_input(solar_os_context_t *ctx)
@@ -3639,16 +3751,23 @@ static void shell_render_input(solar_os_context_t *ctx)
     }
 
     shell_ensure_cursor_visible(ctx);
-    size_t cursor_col = shell_session(ctx)->input_cursor - shell_session(ctx)->input_view_offset;
+    const size_t view_offset = shell_session(ctx)->input_view_offset;
+    const size_t view_end = shell_input_advance_cols(
+        shell_session(ctx)->input,
+        shell_session(ctx)->input_len,
+        view_offset,
+        visible_cols);
+    const size_t visible_len = view_end - view_offset;
+    size_t cursor_col = shell_input_cols(shell_session(ctx)->input,
+                                         view_offset,
+                                         shell_session(ctx)->input_cursor);
     if (cursor_col >= visible_cols) {
         cursor_col = visible_cols - 1;
     }
-    const size_t remaining = shell_session(ctx)->input_len - shell_session(ctx)->input_view_offset;
-    const size_t visible_len = remaining < visible_cols ? remaining : visible_cols;
     (void)solar_os_shell_io_redraw_line(io,
                                         shell_session(ctx)->input_row,
                                         shell_session(ctx)->input_col,
-                                        shell_session(ctx)->input + shell_session(ctx)->input_view_offset,
+                                        shell_session(ctx)->input + view_offset,
                                         visible_len,
                                         cursor_col);
 }
@@ -3693,7 +3812,8 @@ static void shell_move_cursor_left(solar_os_context_t *ctx)
         return;
     }
 
-    shell_session(ctx)->input_cursor--;
+    shell_session(ctx)->input_cursor = shell_input_prev_char(
+        shell_session(ctx)->input, shell_session(ctx)->input_cursor);
     shell_render_input(ctx);
 }
 
@@ -3706,7 +3826,10 @@ static void shell_move_cursor_right(solar_os_context_t *ctx)
         return;
     }
 
-    shell_session(ctx)->input_cursor++;
+    shell_session(ctx)->input_cursor = shell_input_next_char(
+        shell_session(ctx)->input,
+        shell_session(ctx)->input_len,
+        shell_session(ctx)->input_cursor);
     shell_render_input(ctx);
 }
 
@@ -3861,18 +3984,24 @@ static void shell_backspace(solar_os_context_t *ctx)
         if (shell_session(ctx)->input_cursor != shell_session(ctx)->input_len) {
             return;
         }
-        shell_session(ctx)->input_cursor--;
-        shell_session(ctx)->input_len--;
+        const size_t delete_at = shell_input_prev_char(
+            shell_session(ctx)->input, shell_session(ctx)->input_cursor);
+        const size_t deleted = shell_session(ctx)->input_cursor - delete_at;
+        shell_session(ctx)->input_cursor = delete_at;
+        shell_session(ctx)->input_len -= deleted;
         shell_session(ctx)->input[shell_session(ctx)->input_len] = '\0';
         shell_dumb_backspace(ctx);
         return;
     }
 
-    memmove(&shell_session(ctx)->input[shell_session(ctx)->input_cursor - 1],
+    const size_t delete_at = shell_input_prev_char(
+        shell_session(ctx)->input, shell_session(ctx)->input_cursor);
+    const size_t deleted = shell_session(ctx)->input_cursor - delete_at;
+    memmove(&shell_session(ctx)->input[delete_at],
             &shell_session(ctx)->input[shell_session(ctx)->input_cursor],
             shell_session(ctx)->input_len - shell_session(ctx)->input_cursor + 1);
-    shell_session(ctx)->input_cursor--;
-    shell_session(ctx)->input_len--;
+    shell_session(ctx)->input_cursor = delete_at;
+    shell_session(ctx)->input_len -= deleted;
     shell_render_input(ctx);
 }
 
@@ -8931,6 +9060,126 @@ static bool SHELL_NOINLINE shell_launch_registered_app(
     return true;
 }
 
+#if SOLAR_OS_PACKAGE_APP_WEBRADIO
+#define SHELL_WEBRADIO_USAGE \
+    "webradio [--tui] [URL] | webradio <list | add NAME URL | remove NAME | reset>"
+
+// Runs the webradio catalog-management subcommands directly so they work
+// inside `sh` scripts (launching the app would end the script). Anything
+// else is forwarded to the real application launcher.
+static void cmd_webradio(solar_os_context_t *ctx, int argc, char **argv)
+{
+    solar_os_shell_io_t *term = terminal(ctx);
+
+    int index = 1;
+    if (index < argc && strcmp(argv[index], "--tui") == 0) {
+        index++;
+    }
+    const bool management_command =
+        index < argc &&
+        (strcmp(argv[index], "list") == 0 || strcmp(argv[index], "add") == 0 ||
+         strcmp(argv[index], "remove") == 0 || strcmp(argv[index], "reset") == 0);
+    if (!management_command) {
+        const solar_os_app_registry_entry_t *app =
+            solar_os_app_registry_find("webradio");
+        if (app == NULL) {
+            solar_os_shell_io_writeln(term, "webradio: application unavailable");
+            return;
+        }
+        if (!shell_launch_registered_app(ctx, app, argc, argv, NULL, 0)) {
+            shell_session(ctx)->builtin_suppressed_prompt = true;
+        }
+        return;
+    }
+
+    if (solar_os_webradio_catalog_init() != ESP_OK) {
+        solar_os_shell_io_writeln(term, "webradio: catalog unavailable");
+        return;
+    }
+
+    const char *const subcommand = argv[index];
+    const char *const name = index + 1 < argc ? argv[index + 1] : NULL;
+    const char *const url = index + 2 < argc ? argv[index + 2] : NULL;
+    const char *const extra = index + 3 < argc ? argv[index + 3] : NULL;
+
+    if (strcmp(subcommand, "list") == 0) {
+        if (name != NULL) {
+            solar_os_shell_diag_unexpected(term, "webradio", name,
+                                           SHELL_WEBRADIO_USAGE);
+            return;
+        }
+        solar_os_webradio_station_t stations[SOLAR_OS_WEBRADIO_STATION_MAX];
+        const size_t count = solar_os_webradio_catalog_snapshot(
+            stations, SOLAR_OS_WEBRADIO_STATION_MAX, NULL);
+        for (size_t i = 0U; i < count; i++) {
+            solar_os_shell_io_printf(term,
+                                     "%s\t%s\n",
+                                     stations[i].name,
+                                     stations[i].url);
+        }
+        if (count == 0U) {
+            solar_os_shell_io_writeln(term, "webradio: catalog is empty");
+        }
+        return;
+    }
+
+    esp_err_t err = ESP_OK;
+    const char *detail = NULL;
+    if (strcmp(subcommand, "add") == 0) {
+        if (name == NULL || url == NULL) {
+            solar_os_shell_diag_missing(term,
+                                        "webradio",
+                                        name == NULL ? "NAME URL" : "URL",
+                                        SHELL_WEBRADIO_USAGE);
+            return;
+        }
+        if (extra != NULL) {
+            solar_os_shell_diag_unexpected(term, "webradio", extra,
+                                           SHELL_WEBRADIO_USAGE);
+            return;
+        }
+        err = solar_os_webradio_catalog_add(name, url);
+        if (err == ESP_OK) {
+            solar_os_shell_io_printf(term, "webradio: saved %s\n", name);
+        } else {
+            detail = "cannot save station";
+        }
+    } else if (strcmp(subcommand, "remove") == 0) {
+        if (name == NULL) {
+            solar_os_shell_diag_missing(term, "webradio", "NAME",
+                                        SHELL_WEBRADIO_USAGE);
+            return;
+        }
+        if (url != NULL) {
+            solar_os_shell_diag_unexpected(term, "webradio", url,
+                                           SHELL_WEBRADIO_USAGE);
+            return;
+        }
+        err = solar_os_webradio_catalog_remove(name);
+        if (err == ESP_OK) {
+            solar_os_shell_io_printf(term, "webradio: removed %s\n", name);
+        } else {
+            detail = "cannot remove station";
+        }
+    } else {
+        if (name != NULL) {
+            solar_os_shell_diag_unexpected(term, "webradio", name,
+                                           SHELL_WEBRADIO_USAGE);
+            return;
+        }
+        err = solar_os_webradio_catalog_reset();
+        if (err == ESP_OK) {
+            solar_os_shell_io_writeln(term, "webradio: restored default stations");
+        } else {
+            detail = "cannot restore default stations";
+        }
+    }
+    if (err != ESP_OK) {
+        solar_os_shell_diag_esp(term, "webradio", err, detail, NULL);
+    }
+}
+#endif
+
 static void SHELL_NOINLINE shell_report_unknown_command(
     solar_os_shell_io_t *io,
     const char *command,
@@ -9135,6 +9384,324 @@ static bool shell_handle_log_follow_event(solar_os_context_t *ctx, const solar_o
     return false;
 }
 
+/* ------------------------------------------------------------------ */
+/* Pinyin IME composition                                              */
+/* ------------------------------------------------------------------ */
+
+/* Render (or clear) the terminal IME bar above the input line.  Used by
+ * BLE-keyboard / no-touch boards where no on-screen keyboard exists.
+ * When the vkb is visible it draws its own candidate row instead. */
+static void shell_ime_render_bar(solar_os_context_t *ctx, bool visible)
+{
+    solar_os_shell_io_t *io = shell_io(ctx);
+    if (io == NULL || !shell_can_redraw_input(ctx)) {
+        return;
+    }
+    solar_os_shell_session_t *session = shell_session(ctx);
+#if SOLAR_OS_BOARD_HAS_POINTER
+    if (solar_os_vkb_is_visible(&session->vkb)) {
+        visible = false;
+    }
+#endif
+    if (session->input_row == 0) {
+        return;
+    }
+    const size_t row = session->input_row - 1;
+    (void)solar_os_shell_io_clear_line_from(io, row, 0);
+    (void)solar_os_shell_io_set_cursor(io, row, 0);
+    if (!visible || session->ime_candidate_count == 0) {
+        (void)solar_os_shell_io_set_cursor(
+            io,
+            session->input_row,
+            session->input_col + shell_input_cols(session->input,
+                                                  session->input_view_offset,
+                                                  session->input_cursor));
+        return;
+    }
+
+    char buf[128];
+    int len = snprintf(buf, sizeof(buf), "%s:", session->ime_pinyin);
+    if (len < 0) {
+        len = 0;
+    }
+    const int page_offset = session->ime_page * SOLAR_OS_IME_PAGE_SIZE;
+    for (int i = 0; i < SOLAR_OS_IME_PAGE_SIZE; i++) {
+        const int abs = page_offset + i;
+        if (abs >= session->ime_candidate_count) {
+            break;
+        }
+        const int n = snprintf(buf + len,
+                               sizeof(buf) - (size_t)len,
+                               " %d%s",
+                               i + 1,
+                               session->ime_candidate_text[abs]);
+        if (n <= 0 || (size_t)len + (size_t)n >= sizeof(buf)) {
+            break;
+        }
+        len += n;
+    }
+    if (session->ime_page_count > 1) {
+        (void)snprintf(buf + len,
+                       sizeof(buf) - (size_t)len,
+                       " [%d/%d -/=翻页]",
+                       session->ime_page + 1,
+                       session->ime_page_count);
+    }
+    (void)solar_os_shell_io_write_len(io, buf, (size_t)len);
+    (void)solar_os_shell_io_set_cursor(
+        io,
+        session->input_row,
+        session->input_col + shell_input_cols(session->input,
+                                              session->input_view_offset,
+                                              session->input_cursor));
+}
+
+static void shell_ime_clear(solar_os_context_t *ctx)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    session->ime_pinyin[0] = '\0';
+    session->ime_candidate_count = 0;
+    session->ime_page = 0;
+    session->ime_page_count = 0;
+#if SOLAR_OS_BOARD_HAS_POINTER
+    solar_os_vkb_set_candidates(&session->vkb, NULL, 0);
+#endif
+    shell_ime_render_bar(ctx, false);
+}
+
+static void shell_ime_sync_vkb(solar_os_context_t *ctx, bool want_pinyin);
+
+/* Re-run the candidate query and push the current page into the vkb. */
+static void shell_ime_query(solar_os_context_t *ctx)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    session->ime_candidate_count = solar_os_ime_lookup(
+        session->ime_pinyin,
+        session->ime_candidates,
+        SOLAR_OS_IME_MAX_CANDIDATES);
+    session->ime_page_count = (session->ime_candidate_count +
+                               SOLAR_OS_IME_PAGE_SIZE - 1) /
+                              SOLAR_OS_IME_PAGE_SIZE;
+    if (session->ime_page >= session->ime_page_count) {
+        session->ime_page = session->ime_page_count > 0 ?
+            session->ime_page_count - 1 : 0;
+    }
+
+    for (int i = 0; i < session->ime_candidate_count; i++) {
+        const solar_os_ime_candidate_t *candidate =
+            &session->ime_candidates[i];
+        size_t len = candidate->len;
+        if (len >= sizeof(session->ime_candidate_text[i])) {
+            len = sizeof(session->ime_candidate_text[i]) - 1;
+        }
+        memcpy(session->ime_candidate_text[i], candidate->data, len);
+        session->ime_candidate_text[i][len] = '\0';
+        session->ime_candidate_ptrs[i] = session->ime_candidate_text[i];
+    }
+    for (int i = session->ime_candidate_count;
+         i < SOLAR_OS_IME_MAX_CANDIDATES; i++) {
+        session->ime_candidate_ptrs[i] = NULL;
+    }
+
+    const int page_offset = session->ime_page * SOLAR_OS_IME_PAGE_SIZE;
+    int page_count = session->ime_candidate_count - page_offset;
+    if (page_count > SOLAR_OS_IME_PAGE_SIZE) {
+        page_count = SOLAR_OS_IME_PAGE_SIZE;
+    }
+    if (page_count < 0) {
+        page_count = 0;
+    }
+#if SOLAR_OS_BOARD_HAS_POINTER
+    solar_os_vkb_set_candidates(&session->vkb,
+                                &session->ime_candidate_ptrs[page_offset],
+                                page_count);
+#endif
+    shell_ime_render_bar(ctx, true);
+}
+
+/* Toggle the pinyin IME on/off (Shift single press on keyboards). */
+static void shell_ime_toggle(solar_os_context_t *ctx)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    session->ime_enabled = !session->ime_enabled;
+    if (!session->ime_enabled) {
+        shell_ime_clear(ctx);
+        shell_ime_sync_vkb(ctx, false);
+    } else {
+        shell_ime_render_bar(ctx, false);
+    }
+    solar_os_shell_io_t *io = shell_io(ctx);
+    solar_os_terminal_t *term = solar_os_shell_io_terminal(io);
+    if (term != NULL) {
+        solar_os_terminal_invalidate_render(term);
+    }
+}
+
+/* Force the vkb into (or out of) the pinyin layout when it is visible. */
+static void shell_ime_sync_vkb(solar_os_context_t *ctx, bool want_pinyin)
+{
+#if SOLAR_OS_BOARD_HAS_POINTER
+    solar_os_shell_session_t *session = shell_session(ctx);
+    solar_os_vkb_t *vkb = &session->vkb;
+    if (!solar_os_vkb_is_visible(vkb)) {
+        return;
+    }
+    if (want_pinyin && session->ime_candidate_count > 0 &&
+        vkb->mode != SOLAR_OS_VKB_MODE_PINYIN) {
+        solar_os_vkb_set_mode(vkb, SOLAR_OS_VKB_MODE_PINYIN);
+    } else if (!want_pinyin && vkb->mode == SOLAR_OS_VKB_MODE_PINYIN) {
+        solar_os_vkb_set_mode(vkb, SOLAR_OS_VKB_MODE_LOWER);
+    }
+#else
+    (void)ctx;
+    (void)want_pinyin;
+#endif
+}
+
+/* Drop composition state but keep the typed letters in the line. */
+static void shell_ime_cancel(solar_os_context_t *ctx)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    if (session->ime_pinyin[0] == '\0' && session->ime_candidate_count == 0) {
+        return;
+    }
+    shell_ime_clear(ctx);
+    shell_ime_sync_vkb(ctx, false);
+    solar_os_shell_io_t *io = shell_io(ctx);
+    solar_os_terminal_t *term = solar_os_shell_io_terminal(io);
+    if (term != NULL) {
+        solar_os_terminal_invalidate_render(term);
+    }
+}
+
+/* Append one pinyin letter to the composition. */
+static void shell_ime_append_letter(solar_os_context_t *ctx, char ch)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+
+    if (!session->ime_enabled) {
+        shell_insert_char(ctx, ch);
+        return;
+    }
+    if (!shell_can_redraw_input(ctx) ||
+        session->input_len >= shell_max_input_len(ctx)) {
+        shell_insert_char(ctx, ch);
+        return;
+    }
+
+    const size_t pinyin_len = strlen(session->ime_pinyin);
+    if (pinyin_len == 0) {
+        session->ime_start_cursor = session->input_cursor;
+    }
+    if (pinyin_len >= SOLAR_OS_IME_PINYIN_MAX) {
+        shell_insert_char(ctx, ch);
+        return;
+    }
+
+    session->ime_pinyin[pinyin_len] = ch;
+    session->ime_pinyin[pinyin_len + 1] = '\0';
+    shell_insert_char(ctx, ch);
+    shell_ime_query(ctx);
+    shell_ime_sync_vkb(ctx, true);
+}
+
+/* Replace the composed pinyin letters with a selected candidate.
+ * index is page-relative (0..7). */
+static void shell_ime_select(solar_os_context_t *ctx, int index)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    const int absolute = session->ime_page * SOLAR_OS_IME_PAGE_SIZE + index;
+    if (index < 0 || absolute >= session->ime_candidate_count) {
+        return;
+    }
+    const solar_os_ime_candidate_t *candidate =
+        &session->ime_candidates[absolute];
+
+/* Remove the pinyin letters that were inserted as text. */
+    const size_t start = session->ime_start_cursor;
+    const size_t end = session->input_cursor;
+    if (start <= end && start < session->input_len) {
+        const size_t del = end - start;
+        memmove(&session->input[start],
+                &session->input[end],
+                session->input_len - end + 1U);
+        session->input_len -= del;
+        session->input_cursor = start;
+    }
+
+    /* Insert the candidate bytes verbatim.  The candidate is a complete
+     * UTF-8 sequence from the IME table; it must not go through the
+     * paste filter (which is intended for user-pasted text). */
+    const size_t clen = (size_t)candidate->len;
+    size_t inserted = 0;
+    if (clen > 0 &&
+        session->input_len + clen + 1U <= sizeof(session->input)) {
+        memmove(&session->input[session->input_cursor + clen],
+                &session->input[session->input_cursor],
+                session->input_len - session->input_cursor + 1U);
+        memcpy(&session->input[session->input_cursor],
+               candidate->data,
+               clen);
+session->input_cursor += clen;
+        session->input_len += clen;
+        inserted = clen;
+    }
+
+    shell_ime_clear(ctx);
+    shell_ime_sync_vkb(ctx, false);
+
+    if (inserted == 0) {
+        return;
+    }
+    solar_os_shell_io_t *io = shell_io(ctx);
+    solar_os_terminal_t *term = solar_os_shell_io_terminal(io);
+    if (term != NULL) {
+        solar_os_terminal_invalidate_render(term);
+    }
+    shell_render_input(ctx);
+}
+
+/* Backspace within the composition: drop a pinyin letter first. */
+static void shell_ime_backspace(solar_os_context_t *ctx)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    const size_t pinyin_len = strlen(session->ime_pinyin);
+    if (pinyin_len == 0) {
+        shell_backspace(ctx);
+        return;
+    }
+    session->ime_pinyin[pinyin_len - 1] = '\0';
+    shell_backspace(ctx);
+    shell_ime_query(ctx);
+    if (session->ime_pinyin[0] == '\0') {
+        shell_ime_sync_vkb(ctx, false);
+    }
+}
+
+/* Flip the candidate page (delta = -1 or +1). */
+static void shell_ime_page(solar_os_context_t *ctx, int delta)
+{
+    solar_os_shell_session_t *session = shell_session(ctx);
+    if (session->ime_pinyin[0] == '\0' || session->ime_page_count <= 1) {
+        return;
+    }
+    int page = session->ime_page + delta;
+    if (page < 0) {
+        page = session->ime_page_count - 1;
+    } else if (page >= session->ime_page_count) {
+        page = 0;
+    }
+    if (page != session->ime_page) {
+        session->ime_page = page;
+        shell_ime_query(ctx);
+        solar_os_shell_io_t *io = shell_io(ctx);
+        solar_os_terminal_t *term = solar_os_shell_io_terminal(io);
+        if (term != NULL) {
+            solar_os_terminal_invalidate_render(term);
+        }
+    }
+}
+
 #if SOLAR_OS_BOARD_HAS_POINTER
 static void shell_handle_char(solar_os_context_t *ctx, char ch);
 
@@ -9159,6 +9726,18 @@ static void shell_vkb_emit_action(solar_os_context_t *ctx,
         break;
     case SOLAR_OS_VKB_ACTION_RIGHT:
         shell_handle_char(ctx, (char)SOLAR_OS_KEY_RIGHT);
+        break;
+    case SOLAR_OS_VKB_ACTION_IME_SELECT:
+        shell_ime_select(ctx, (uint8_t)action->ch);
+        break;
+    case SOLAR_OS_VKB_ACTION_IME_PAGE_PREV:
+        shell_ime_page(ctx, -1);
+        break;
+    case SOLAR_OS_VKB_ACTION_IME_PAGE_NEXT:
+        shell_ime_page(ctx, +1);
+        break;
+    case SOLAR_OS_VKB_ACTION_IME_ABC:
+        shell_ime_cancel(ctx);
         break;
     case SOLAR_OS_VKB_ACTION_SHIFT:
     case SOLAR_OS_VKB_ACTION_SYMBOL:
@@ -9218,29 +9797,37 @@ static void shell_handle_char(solar_os_context_t *ctx, char ch)
 
     switch ((uint8_t)ch) {
     case SOLAR_OS_KEY_UP:
+        shell_ime_cancel(ctx);
         shell_history_previous(ctx);
         break;
     case SOLAR_OS_KEY_DOWN:
+        shell_ime_cancel(ctx);
         shell_history_next(ctx);
         break;
     case SOLAR_OS_KEY_LEFT:
+        shell_ime_cancel(ctx);
         shell_move_cursor_left(ctx);
         break;
     case SOLAR_OS_KEY_CTRL_LEFT:
+        shell_ime_cancel(ctx);
         shell_move_cursor_word_left(ctx);
         break;
     case SOLAR_OS_KEY_RIGHT:
+        shell_ime_cancel(ctx);
         shell_move_cursor_right(ctx);
         break;
     case SOLAR_OS_KEY_CTRL_RIGHT:
+        shell_ime_cancel(ctx);
         shell_move_cursor_word_right(ctx);
         break;
     case SOLAR_OS_KEY_HOME:
     case SOLAR_OS_KEY_CTRL_HOME:
+        shell_ime_cancel(ctx);
         shell_move_cursor_home(ctx);
         break;
     case SOLAR_OS_KEY_END:
     case SOLAR_OS_KEY_CTRL_END:
+        shell_ime_cancel(ctx);
         shell_move_cursor_end(ctx);
         break;
     case SOLAR_OS_KEY_PAGE_UP:
@@ -9259,9 +9846,11 @@ static void shell_handle_char(solar_os_context_t *ctx, char ch)
             shell_session(ctx)->history_index = -1;
             shell_replace_input(ctx, "");
         }
+        shell_ime_cancel(ctx);
         break;
     case '\r':
     case '\n':
+        shell_ime_cancel(ctx);
         solar_os_shell_io_newline(shell_io(ctx));
         if (shell_execute(ctx, shell_session(ctx)->input)) {
             shell_prompt(ctx);
@@ -9271,18 +9860,30 @@ static void shell_handle_char(solar_os_context_t *ctx, char ch)
         if (shell_session(ctx)->input_cursor > 0) {
             shell_session(ctx)->history_browsing = false;
             shell_session(ctx)->history_index = -1;
-            shell_backspace(ctx);
+            shell_ime_backspace(ctx);
         }
         break;
     case '\t':
+        shell_ime_cancel(ctx);
         shell_complete_command(ctx, repeated_tab);
         break;
     case 0x16U:
+        shell_ime_cancel(ctx);
         shell_paste_clipboard(ctx);
         break;
     default:
-        if (shell_is_printable_char(ch) &&
-            shell_session(ctx)->input_len < shell_max_input_len(ctx)) {
+        if (ch >= 'a' && ch <= 'z') {
+            shell_ime_append_letter(ctx, ch);
+        } else if ((ch == '=' || ch == '-') &&
+                   shell_session(ctx)->ime_candidate_count > 0) {
+            shell_ime_page(ctx, ch == '=' ? 1 : -1);
+        } else if (ch >= '1' && ch <= '8' &&
+                   shell_session(ctx)->ime_candidate_count > 0) {
+            shell_ime_select(ctx, ch - '1');
+        } else if (ch == ' ' && shell_session(ctx)->ime_candidate_count > 0) {
+            shell_ime_select(ctx, 0);
+        } else if (shell_is_printable_char(ch) &&
+                   shell_session(ctx)->input_len < shell_max_input_len(ctx)) {
             shell_session(ctx)->history_browsing = false;
             shell_session(ctx)->history_index = -1;
             shell_insert_char(ctx, ch);
@@ -9336,6 +9937,11 @@ esp_err_t solar_os_shell_session_start(solar_os_context_t *ctx,
     session->history_index = -1;
     session->history_browsing = false;
     session->previous_key_was_tab = false;
+    session->ime_enabled = true;
+    session->ime_shift_pending = false;
+    session->ime_pinyin[0] = '\0';
+    session->ime_candidate_count = 0;
+    session->ime_start_cursor = 0;
     session->builtin_suppressed_prompt = false;
     session->prompt_on_resume = false;
     session->clear_on_resume = false;
@@ -9402,7 +10008,42 @@ bool solar_os_shell_session_event(solar_os_context_t *ctx,
     }
 #endif
 
-    if (event == NULL || event->type != SOLAR_OS_EVENT_CHAR) {
+    if (event == NULL) {
+        return false;
+    }
+
+    /* Raw keyboard events: character keys feed the same line editor as
+     * CHAR events; a bare Shift press+release (no character key in
+     * between) toggles the pinyin IME.  Shift combined with a character
+     * key (Shift+A) must NOT toggle.  Candidate paging uses the '-'
+     * and '=' keys directly (no modifier needed). */
+    if (event->type == SOLAR_OS_EVENT_KEY) {
+        const solar_os_input_key_event_t *key = &event->data.key;
+        const bool shift_held =
+            (key->modifiers & SOLAR_OS_INPUT_MOD_SHIFT) != 0U;
+        const bool other_mods =
+            (key->modifiers & (SOLAR_OS_INPUT_MOD_CTRL |
+                               SOLAR_OS_INPUT_MOD_ALT)) != 0U;
+
+        if (key->action == SOLAR_OS_INPUT_KEY_PRESS) {
+            if (key->key != 0U) {
+                /* A character key while shift is held is a shift-combo
+                 * (Shift+A, Shift+1 ...), not a bare IME toggle. */
+                session->ime_shift_pending = false;
+                shell_handle_char(ctx, (char)key->key);
+            } else if (shift_held && !other_mods) {
+                session->ime_shift_pending = true;
+            }
+        } else if (key->action == SOLAR_OS_INPUT_KEY_RELEASE) {
+            if (key->key == 0U && !shift_held && session->ime_shift_pending) {
+                session->ime_shift_pending = false;
+                shell_ime_toggle(ctx);
+            }
+        }
+        return true;
+    }
+
+    if (event->type != SOLAR_OS_EVENT_CHAR) {
         return false;
     }
 
@@ -9520,6 +10161,7 @@ static const solar_os_app_t shell_app = {
     .summary = "SolarOS command shell",
     .app_class = SOLAR_OS_APP_CLASS_TUI,
     .flags = SOLAR_OS_APP_FLAG_RESUMABLE
+           | SOLAR_OS_APP_FLAG_KEY_EVENTS
 #if SOLAR_OS_BOARD_HAS_POINTER
            | SOLAR_OS_APP_FLAG_POINTER_EVENTS
 #endif

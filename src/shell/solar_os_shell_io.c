@@ -855,6 +855,10 @@ esp_err_t solar_os_shell_io_redraw_line(solar_os_shell_io_t *io,
     }
 
     if (io->kind == SOLAR_OS_SHELL_IO_KIND_TERMINAL) {
+        /* A previous, possibly truncated redraw may have left the
+         * terminal's UTF-8 decoder mid-sequence; start clean so the
+         * first CJK glyph of this line renders correctly. */
+        solar_os_terminal_utf8_reset(io->terminal);
         esp_err_t err = solar_os_shell_io_clear_line_from(io, row, col);
         if (err == ESP_OK) {
             err = solar_os_shell_io_set_cursor(io, row, col);

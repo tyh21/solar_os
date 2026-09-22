@@ -490,6 +490,11 @@ Compact displays omit icons that do not fit before the clock and unread count.
 | `agent` | `agent config endpoint|model|key|reasoning|tools|max-tools VALUE` | Configure the provider and tool policy. |
 | `agent` | `agent script python\|lua (-c SOURCE \| FILE) [ARGS...]` | Run a bounded script through the agent execution path. |
 | `agent` | `agent forget` | Erase the saved agent configuration. |
+| `webradio` | `webradio`; `webradio --tui`; `webradio URL` | Open the WebRadio player, force the station-list TUI, or play one direct MP3 stream URL. |
+| `webradio` | `webradio list` | List the saved station catalog. |
+| `webradio` | `webradio add NAME URL` | Add a station or update an existing station with the same name. |
+| `webradio` | `webradio remove NAME` | Remove a station from the catalog. |
+| `webradio` | `webradio reset` | Restore the default station catalog. |
 | `jobs` | `jobs` | List registered jobs and their state. |
 | `job` | `job status [name]` | Show one job or all jobs. |
 | `job` | `job start <name> [args...]` | Start or restart a job. |

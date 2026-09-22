@@ -13,6 +13,8 @@
 #include <string.h>
 #include "u8g2.h"
 #include "solar_os_fonts.h"
+#include "solar_os_fontbank.h"
+#include "solar_os_text_gbk.h"
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
@@ -37,6 +39,115 @@ typedef struct {
     uint8_t action_type;     /* solar_os_vkb_action_type_t            */
     char ch;                 /* payload for ACTION_CHAR               */
 } vkb_kdef_t;
+
+/* ---- Pinyin IME mode ---- */
+
+void solar_os_vkb_set_mode(solar_os_vkb_t *vkb, solar_os_vkb_mode_t mode)
+{
+    if (vkb == NULL) {
+        return;
+    }
+    if (mode != vkb->mode) {
+        vkb->mode = mode;
+        vkb->layout_valid = false;
+    }
+}
+
+void solar_os_vkb_set_candidates(solar_os_vkb_t *vkb,
+                                 const char *const *candidates,
+                                 int count)
+{
+    if (vkb == NULL) {
+        return;
+    }
+    if (count > SOLAR_OS_IME_PAGE_SIZE) {
+        count = SOLAR_OS_IME_PAGE_SIZE;
+    }
+    int n = 0;
+    for (; n < count; n++) {
+        if (candidates == NULL || candidates[n] == NULL) {
+            break;
+        }
+        vkb->ime_candidates[n] = candidates[n];
+    }
+    for (int i = n; i < SOLAR_OS_IME_PAGE_SIZE; i++) {
+        vkb->ime_candidates[i] = NULL;
+    }
+    vkb->ime_candidate_count = n;
+    vkb->layout_valid = false;
+}
+
+int solar_os_vkb_candidate_count(const solar_os_vkb_t *vkb)
+{
+    if (vkb == NULL || vkb->mode != SOLAR_OS_VKB_MODE_PINYIN) {
+        return 0;
+    }
+    return vkb->ime_candidate_count;
+}
+
+/* UTF-8/CJK aware text width at the vkb font metrics. */
+static int vkb_text_width(u8g2_t *u8g2, const char *text)
+{
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+    const int cell = u8g2_GetMaxCharWidth(u8g2);
+    int width = 0;
+    const char *p = text;
+    const char *end = text + strlen(text);
+    while (p < end) {
+        uint32_t cp = solar_os_text_utf8_next(&p, end);
+        if (solar_os_fontbank_is_wide(cp) && solar_os_fontbank_glyph(cp) != NULL) {
+            int adv = cell * 2;
+            if (adv < SOLAR_OS_FONTBANK_GLYPH_WIDTH) {
+                adv = SOLAR_OS_FONTBANK_GLYPH_WIDTH;
+            }
+            width += adv;
+        } else {
+            width += u8g2_GetGlyphWidth(u8g2, (uint16_t)(cp & 0xFFFFU));
+        }
+    }
+    return width;
+}
+
+/* Draw mixed ASCII/CJK text at baseline y. Returns end x. */
+static int vkb_draw_text(u8g2_t *u8g2, int x, int baseline_y, const char *text)
+{
+    if (text == NULL || text[0] == '\0') {
+        return x;
+    }
+    const int cell = u8g2_GetMaxCharWidth(u8g2);
+    const int ascent = (int)u8g2_GetAscent(u8g2);
+    int cx = x;
+    const char *p = text;
+    const char *end = text + strlen(text);
+    while (p < end) {
+        uint32_t cp = solar_os_text_utf8_next(&p, end);
+        const uint8_t *g = solar_os_fontbank_is_wide(cp)
+                               ? solar_os_fontbank_glyph(cp) : NULL;
+        if (g != NULL) {
+            int adv = cell * 2;
+            if (adv < SOLAR_OS_FONTBANK_GLYPH_WIDTH) {
+                adv = SOLAR_OS_FONTBANK_GLYPH_WIDTH;
+            }
+            int top = baseline_y - ascent +
+                      (ascent > SOLAR_OS_FONTBANK_GLYPH_HEIGHT
+                           ? (ascent - SOLAR_OS_FONTBANK_GLYPH_HEIGHT) / 2
+                           : 0);
+            u8g2_DrawBitmap(u8g2, (u8g2_uint_t)cx, (u8g2_uint_t)top,
+                            (u8g2_uint_t)(SOLAR_OS_FONTBANK_GLYPH_BYTES /
+                                          SOLAR_OS_FONTBANK_GLYPH_HEIGHT),
+                            (u8g2_uint_t)SOLAR_OS_FONTBANK_GLYPH_HEIGHT,
+                            g);
+            cx += adv;
+        } else {
+            u8g2_DrawGlyph(u8g2, (u8g2_uint_t)cx, (u8g2_uint_t)baseline_y,
+                           (uint16_t)(cp & 0xFFFFU));
+            cx += u8g2_GetGlyphWidth(u8g2, (uint16_t)(cp & 0xFFFFU));
+        }
+    }
+    return cx;
+}
 
 /* helper: shortcut for letter keys: KC('q') -> { "q", 1, ..., 'q' } */
 #define KC(c)   { (const char[]){(c),'\0'}, 1, SOLAR_OS_VKB_ACTION_CHAR, (char)(c) }
@@ -99,6 +210,41 @@ static const vkb_kdef_t row_upper_3[] = {
     {NULL,0,0,0},
 };
 
+/* ---- Pinyin IME mode ---- */
+/* Row 0 is the candidate row: page-prev, 8 candidates, page-next.  The
+ * candidate labels/actions are rebuilt at runtime from vkb->candidate_*;
+ * the entries here are placeholders with weight 1 each. */
+static const vkb_kdef_t row_py_0[] = {
+    KS("<",1,SOLAR_OS_VKB_ACTION_IME_PAGE_PREV),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(" ",1,SOLAR_OS_VKB_ACTION_IME_SELECT),
+    KS(">",1,SOLAR_OS_VKB_ACTION_IME_PAGE_NEXT),
+    {NULL,0,0,0},
+};
+static const vkb_kdef_t row_py_1[] = {
+    KC('q'), KC('w'), KC('e'), KC('r'), KC('t'), KC('y'), KC('u'), KC('i'), KC('o'), KC('p'),
+    KS("BS",2,SOLAR_OS_VKB_ACTION_BACKSPACE),
+    {NULL,0,0,0},
+};
+static const vkb_kdef_t row_py_2[] = {
+    KC('a'), KC('s'), KC('d'), KC('f'), KC('g'), KC('h'), KC('j'), KC('k'), KC('l'),
+    KS("CR",2,SOLAR_OS_VKB_ACTION_ENTER),
+    {NULL,0,0,0},
+};
+static const vkb_kdef_t row_py_3[] = {
+    KS("abc",2,SOLAR_OS_VKB_ACTION_IME_ABC),
+    KC('z'), KC('x'), KC('c'), KC('v'), KC('b'), KC('n'), KC('m'),
+    KS("space",3,SOLAR_OS_VKB_ACTION_SPACE),
+    KS("KB",2,SOLAR_OS_VKB_ACTION_TOGGLE),
+    {NULL,0,0,0},
+};
+
 /* ---- Symbol mode ---- */
 static const vkb_kdef_t row_sym_0[] = {
     KS("abc",2,SOLAR_OS_VKB_ACTION_SYMBOL),
@@ -126,10 +272,11 @@ static const vkb_kdef_t row_sym_3[] = {
     {NULL,0,0,0},
 };
 
-static const vkb_kdef_t *const mode_rows[3][VKB_ROW_COUNT] = {
+static const vkb_kdef_t *const mode_rows[4][VKB_ROW_COUNT] = {
     { row_lower_0, row_lower_1, row_lower_2, row_lower_3 },
     { row_upper_0, row_upper_1, row_upper_2, row_upper_3 },
     { row_sym_0,   row_sym_1,   row_sym_2,   row_sym_3   },
+    { row_py_0,    row_py_1,    row_py_2,    row_py_3    },
 };
 
 /* ------------------------------------------------------------------ */
@@ -169,11 +316,24 @@ static void vkb_rebuild_keys(solar_os_vkb_t *vkb)
         solar_os_vkb_row_t *row = &vkb->rows[r];
         const vkb_kdef_t *def = rows[r];
         int n = 0;
+        int select_index = 0;
         while (def->label != NULL && n < SOLAR_OS_VKB_MAX_ROW_KEYS) {
-            row->keys[n].label  = def->label;
-            row->keys[n].action.type = (solar_os_vkb_action_type_t)def->action_type;
-            row->keys[n].action.ch    = def->ch;
-            row->keys[n].highlighted  = false;
+            solar_os_vkb_key_t *key = &row->keys[n];
+            key->label  = def->label;
+            key->action.type = (solar_os_vkb_action_type_t)def->action_type;
+            key->action.ch    = def->ch;
+            key->highlighted  = false;
+
+            if (vkb->mode == SOLAR_OS_VKB_MODE_PINYIN && r == 0) {
+                /* candidate keys: label + select index from the current
+                 * candidate list (skipping the page-flip keys). */
+                if (key->action.type == SOLAR_OS_VKB_ACTION_IME_SELECT) {
+                    const int index = select_index++;
+                    key->action.ch = (char)index;
+                    key->label = (index < vkb->ime_candidate_count)
+                                     ? vkb->ime_candidates[index] : "";
+                }
+            }
             n++;
             def++;
         }
@@ -405,11 +565,11 @@ void solar_os_vkb_draw(solar_os_vkb_t *vkb,
                 vkb_set_color(u8g2, palette_inverted, black_is_one, 1);
             }
 
-            int lw = u8g2_GetStrWidth(u8g2, lbl);
+            int lw = vkb_text_width(u8g2, lbl);
             int lx = key->x + (key->w - lw) / 2;
             int ly = key->y + (key->h + ascent) / 2;
             if (lx < key->x + 1) lx = key->x + 1;
-            u8g2_DrawStr(u8g2, (u8g2_uint_t)lx, (u8g2_uint_t)ly, lbl);
+            (void)vkb_draw_text(u8g2, lx, ly, lbl);
         }
     }
 

@@ -539,6 +539,13 @@ webradio reset
 combined with a direct stream URL. Catalog-management commands also accept it
 as a harmless interface override.
 
+The `list`, `add`, `remove`, and `reset` subcommands run as shell builtins
+without launching the WebRadio app, so `sh` scripts that batch-manage the
+catalog (for example importing a set of stations from a prepared file)
+continue with the next line. Launching the player itself (`webradio` with no
+arguments or with a stream URL) still takes over the shell and ends any
+calling script, as with any other foreground app.
+
 URLs are literal HTTP or HTTPS MP3 stream URLs. WebRadio does not translate
 station names or website addresses and does not discover streams from HTML
 pages. The initial implementation does not support playlists, HLS, or AAC.

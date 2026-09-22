@@ -43,14 +43,14 @@ static EXT_RAM_BSS_ATTR webradio_catalog_state_t catalog;
 static portMUX_TYPE catalog_lock = portMUX_INITIALIZER_UNLOCKED;
 
 static const solar_os_webradio_station_t default_stations[] = {
-    {"Nightride", "https://stream.nightride.fm/nightride.mp3"},
-    {"Chillsynth", "https://stream.nightride.fm/chillsynth.mp3"},
-    {"Datawave", "https://stream.nightride.fm/datawave.mp3"},
-    {"Spacesynth", "https://stream.nightride.fm/spacesynth.mp3"},
-    {"Darksynth", "https://stream.nightride.fm/darksynth.mp3"},
-    {"Horrorsynth", "https://stream.nightride.fm/horrorsynth.mp3"},
-    {"EBSM", "https://stream.nightride.fm/ebsm.mp3"},
-    {"Rekt", "https://stream.nightride.fm/rekt.mp3"},
+    {"中国之声", "http://lhttp.qtfm.cn/live/15318317/64k.mp3"},
+    {"北京音乐广播", "http://lhttp.qtfm.cn/live/332/64k.mp3"},
+    {"上海动感101", "http://lhttp.qingting.fm/live/274/64k.mp3"},
+    {"广东珠江经济台", "http://lhttp.qtfm.cn/live/1259/64k.mp3"},
+    {"深圳音乐广播", "http://lhttp.qtfm.cn/live/1271/64k.mp3"},
+    {"江苏经典流行", "http://lhttp.qtfm.cn/live/4938/64k.mp3"},
+    {"济南音乐广播", "http://lhttp.qtfm.cn/live/1671/64k.mp3"},
+    {"四川城市之音", "http://lhttp.qtfm.cn/live/1111/64k.mp3"},
 };
 
 bool solar_os_webradio_url_valid(const char *url)

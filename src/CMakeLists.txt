@@ -361,6 +361,8 @@ list(APPEND SOLAR_OS_SRCS
     "services/solar_os_fontbank.c"
     "services/solar_os_text_gbk.c"
     "services/solar_os_gbk_table.c"
+    "services/solar_os_ime_table.c"
+    "services/solar_os_ime.c"
 )
 if(SOLAR_OS_BOARD_HAS_POINTER)
     list(APPEND SOLAR_OS_SRCS "services/solar_os_vkb.c")

@@ -13,6 +13,18 @@ AIGC:
 
 ## 4.x
 
+- **4.12.1** — 2026-09-21 — `webradio` is now also a shell builtin: the
+  `list`, `add`, `remove`, and `reset` catalog-management subcommands run
+  directly against the station catalog without launching the WebRadio app.
+  Previously these subcommands went through the app launcher, and any `sh`
+  script that contained them stopped after the first one because launching
+  an app hands the terminal over and ends the calling script. Batch station
+  imports from a prepared file (for example `sh /sdcard/stations.txt`) now
+  run to completion. Bare `webradio`, `webradio --tui`, and direct stream
+  URLs are forwarded to the application unchanged. The `webradio` command is
+  now documented in `doc/manual/commands.md`, and the manual generator's
+  alias-ownership rules cede the bare `webradio` manual alias to the new
+  command page.
 - **4.12.0** — 2026-09-18 — Added the Waveshare ESP32-S3-Touch-LCD-3.5B
   target with its 320x480 AXS15231B quad-SPI color display, built-in
   resistive-free touch controller, AXP2101 power management, and TCA9554

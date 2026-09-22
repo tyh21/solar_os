@@ -1,0 +1,22 @@
+# WebRadio station setup script for SolarOS
+# Usage: copy this file to the device storage (e.g. SD card), then on any
+# text shell (UART / USB CDC / Telnet / SSH) run:
+#   sh /sdcard/stations.txt
+# Lines starting with '#' are comments. Each line runs as one shell command.
+
+# --- Remove the default stations that are unreachable in China ---
+
+
+# --- Add your stations (direct MP3 stream URLs only, http:// or https://) ---
+# Find direct-stream URLs on https://www.radio-browser.info (filter by China)
+# or from the station's official site. Playlists (.m3u/.pls) will NOT work.
+# Name: up to 31 chars, no spaces issue; URL: up to 159 chars.
+# Examples (replace with URLs you have verified):
+# webradio add CCTV-radio http://example.com/live/128k.mp3
+# webradio add MyMusic https://example.cn/stream.mp3
+#webradio add 怀集音乐之声 https://lhttp.qingting.fm/live/4804/64k.mp3
+webradio add 500首华语经典 https://lhttp.qtfm.cn/live/5022308/64k.mp3
+webradio add 50首经典古典音乐 https://lhttp-hw.qtfm.cn/live/5022308/64k.mp3
+webradio add 80后音悦台 http://lhttp.qingting.fm/live/20207761/64k.mp3
+# --- Show the result ---
+# webradio list
